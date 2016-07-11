@@ -134,7 +134,8 @@ class SelectDB
     {
         if (strpos($table,"`") === false)
         {
-            $this->table= "`".$table."`";
+            //防止关键字冲突 增加别名
+            $this->table= " ".$table." ";
         }
         else{
             $this->table=$table;
@@ -348,7 +349,7 @@ class SelectDB
      */
     function join($table_name,$on)
     {
-        $this->join.="INNER JOIN `{$table_name}` ON ({$on})";
+        $this->join.=" INNER JOIN {$table_name} ON ({$on}) ";
     }
 
     /**
@@ -359,7 +360,7 @@ class SelectDB
      */
     function leftjoin($table_name,$on)
     {
-        $this->join.="LEFT JOIN `{$table_name}` ON ({$on})";
+        $this->join.=" LEFT JOIN {$table_name} ON ({$on}) ";
     }
 
     /**
@@ -370,7 +371,7 @@ class SelectDB
      */
     function rightjoin($table_name,$on)
     {
-        $this->join.="RIGHT JOIN `{$table_name}` ON ({$on})";
+        $this->join.=" RIGHT JOIN {$table_name} ON ({$on}) ";
     }
 
     /**
@@ -504,6 +505,7 @@ class SelectDB
     {
         foreach ($params as $array)
         {
+
             if (isset($array[0]) and isset($array[1]) and count($array) == 2)
             {
                 $this->_call($array[0], $array[1]);
@@ -539,6 +541,8 @@ class SelectDB
         {
             $this->sql = $sql;
         }
+    //    echo $this->sql;
+
         $this->result = $this->db->query($this->sql);
         $this->is_execute++;
     }
@@ -608,6 +612,7 @@ class SelectDB
         {
             if (strpos($key, '_') !== 0)
             {
+
                 $this->_call($key, $value);
             }
             else
@@ -634,7 +639,14 @@ class SelectDB
         {
             if (is_array($param))
             {
-                call_user_func_array(array($this, $method), $param);
+                //多次调用 扩展数组支持
+                if(count($param)>0&&is_array($param[0])){
+                    foreach($param as $prm){
+                        call_user_func_array(array($this, $method), $prm);
+                    }
+                }else{
+                         call_user_func_array(array($this, $method), $param);
+                }
             }
             else
             {
@@ -785,7 +797,7 @@ class SelectDB
     public function count()
     {
         $sql = "select count({$this->count_fields}) as c from {$this->table} {$this->join} {$this->where} {$this->union} {$this->group}";
- //echo $sql;
+
         if ($this->if_union)
         {
             $sql = str_replace('{#union_select#}', "count({$this->count_fields}) as c", $sql);

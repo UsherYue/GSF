@@ -1,6 +1,6 @@
 <?php
 /**
- * GridSwooleFramework
+ * PHPProject
  * Helper.php Created by usher.yue.
  * User: usher.yue
  * Date: 16/7/5
@@ -14,7 +14,22 @@ use App\Model;
 use App\Model\BaseModel;
 use Swoole\Client\CURL;
 
-
+/**获取配置
+ * @param $key
+ * @return bool
+ */
+function C($key){
+    $obj=createModel('Config')->get($key)->get();
+    if($obj==null){
+        return false ;
+    }else{
+        if(count($obj)==0){
+            return false ;
+        }else{
+            return $obj['value'];
+        }
+    }
+}
 
 /**获取post.x  get.x  提供一个filter函数可以用来过滤数据
  * @param $prm

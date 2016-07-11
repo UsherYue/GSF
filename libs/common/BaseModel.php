@@ -1,6 +1,6 @@
 <?php
 /**
- * GridSwooleFramework
+ * PHPProject
  * BaseModel.php Created by usher.yue.
  * User: usher.yue
  * Date: 16/7/5

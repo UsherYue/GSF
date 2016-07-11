@@ -69,16 +69,16 @@ class Swoole
      * 可使用的组件
      */
     static $modules = array(
-		'redis' => true,  //redis
+        'redis' => true,  //redis
         'mongo' => true,  //mongodb
-    	'db' => true,  //数据库
+        'db' => true,  //数据库
         'codb' => true, //并发MySQLi客户端
-    	'tpl' => true, //模板系统
-    	'cache' => true, //缓存
-    	'event' => true, //异步事件
-    	'log' => true, //日志
-    	'upload' => true, //上传组件
-    	'user' => true,   //用户验证组件
+        'tpl' => true, //模板系统
+        'cache' => true, //缓存
+        'event' => true, //异步事件
+        'log' => true, //日志
+        'upload' => true, //上传组件
+        'user' => true,   //用户验证组件
         'session' => true, //session
         'http' => true, //http
         'url' => true, //urllib
@@ -477,8 +477,8 @@ class Swoole
         //将对象赋值到控制器
         $php->request = $request;
         $php->response = $response;
-       // var_dump(  $php->request);
-        
+        // var_dump(  $php->request);
+
         try
         {
             try
@@ -501,7 +501,7 @@ class Swoole
         {
             $this->server->httpError(500, $response, $e->getMessage()."<hr />".nl2br($e->getTraceAsString()));
         }
-        
+
         //重定向
         if (isset($response->head['Location']) and ($response->http_status < 300 or $response->http_status > 399))
         {
@@ -529,10 +529,11 @@ class Swoole
      */
     function runMVC()
     {
+
         $mvc = call_user_func($this->router_function);
 //        echo '<pre>';
-//        var_dump($this->router_function[0]->config->config['rewrite']);
-//
+//        var_dump($mvc);
+        //var_dump($this->router_function[0]->config->config['rewrite']);
 //        echo '</pre>';
         if ($mvc === false)
         {
@@ -542,19 +543,19 @@ class Swoole
         //check controller name
         if (!preg_match('/^[a-z0-9_]+$/i', $mvc['controller']))
         {
-        	return Swoole\Error::info('MVC Error!',"controller[{$mvc['controller']}] name incorrect.Regx: /^[a-z0-9_]+$/i");
+            return Swoole\Error::info('MVC Error!',"controller[{$mvc['controller']}] name incorrect.Regx: /^[a-z0-9_]+$/i");
         }
         //check view name
         if (!preg_match('/^[a-z0-9_]+$/i', $mvc['view']))
         {
-        	return Swoole\Error::info('MVC Error!',"view[{$mvc['view']}] name incorrect.Regx: /^[a-z0-9_]+$/i");
+            return Swoole\Error::info('MVC Error!',"view[{$mvc['view']}] name incorrect.Regx: /^[a-z0-9_]+$/i");
         }
         //check app name
         if (isset($mvc['app']) and !preg_match('/^[a-z0-9_]+$/i',$mvc['app']))
         {
-        	return Swoole\Error::info('MVC Error!',"app[{$mvc['app']}] name incorrect.Regx: /^[a-z0-9_]+$/i");
+            return Swoole\Error::info('MVC Error!',"app[{$mvc['app']}] name incorrect.Regx: /^[a-z0-9_]+$/i");
         }
-		$this->env['mvc'] = $mvc;
+        $this->env['mvc'] = $mvc;
 
         //使用命名空间，文件名必须大写
         $controller_class = '\\App\\Controller\\'.ucwords($mvc['controller']);
@@ -603,7 +604,7 @@ class Swoole
 
         $param = empty($mvc['param']) ? null : $mvc['param'];
         $method = $mvc['view'];
-       // var_dump($param);
+        // var_dump($param);
         //doAction
         $return = $controller->$method($param);
         //保存Session
@@ -665,8 +666,15 @@ function swoole_urlrouter_rewrite(&$uri)
     /////////////////
     foreach($rewrite as $rule)
     {
+
         if (preg_match('#'.$rule['regx'].'#i', $uri_for_regx, $match))
         {
+            //如果匹配边界没有/ 那么不匹配
+            $subRegx=preg_replace('#'.$rule['regx'].'#i',"",$uri_for_regx);
+            if($subRegx{0}!='/'&&$subRegx!=""){
+                continue ;
+            }
+           // var_dump( $subRegx);
             if (isset($rule['get']))
             {
                 $p = explode(',', $rule['get']);
@@ -677,23 +685,31 @@ function swoole_urlrouter_rewrite(&$uri)
                         $_GET[$v] = $match[$k + 1];
                     }
                 }
-           }else{
+            }else{
                 //默认参数处理PATH INFO  当不设置get的时候进入此处
                 $pathInfo=preg_replace('#'.$rule['regx'].'#i',"",$uri_for_regx);
                 $uriRewriteMVC=preg_replace('#'.$pathInfo.'#i',"",$uri_for_regx);
+              //  echo $pathInfo.'<br/>';
+             //   echo '#'.$rule['regx'].'#i'.'<br/>';
                 //pathinfo 存在
                 if($pathInfo!=""){
                     //$uriRewriteMVC结尾不允许却少/
                     $endDelimiter=$uri_for_regx{strlen($uriRewriteMVC)-1};
-                    if($endDelimiter!='/'){
+                    if($endDelimiter=="" and $pathInfo{0}==''){
+
                         return false ;
+                    }
+                    //修改正则表达式路由问题
+                    if($pathInfo{0}=='/'){
+                        $pathInfo=substr($pathInfo,1,strlen($pathInfo)-1);
                     }
                     //填充参数到get 奇数直接填充 空白
                     $prmBuildArr=explode('/',$pathInfo);
                     $prmBuildLen=count($prmBuildArr);
+//                    var_dump($prmBuildArr);
                     for($i=0;$i<$prmBuildLen;$i+=2){
                         if($i+1<$prmBuildLen){
-                          $_GET[$prmBuildArr[$i]]=$prmBuildArr[$i+1];
+                            $_GET[$prmBuildArr[$i]]=$prmBuildArr[$i+1];
                         }else{
                             $_GET[$prmBuildArr[$i]]="";
                         }

@@ -1,6 +1,6 @@
 <?php
 /**
- * GridSwooleFramework
+ * PHPProject
  * BaseController.php Created by usher.yue.
  * User: usher.yue
  * Date: 16/6/28

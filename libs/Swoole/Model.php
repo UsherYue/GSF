@@ -89,6 +89,7 @@ class Model
 	 */
 	public function gets($params, &$pager=null)
 	{
+
 		if (empty($params))
 		{
 			throw new \Exception("no params.");
@@ -112,6 +113,7 @@ class Model
 			$pager = $selectdb->pager;
 
 		}
+
 		return $selectdb->getall();
 	}
 
