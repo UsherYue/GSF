@@ -105,3 +105,11 @@ function is_assoc($arr) {
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
+/**
+ * @param $value
+ */
+function Dumps($value){
+    echo '<pre>';
+    var_dump($value);
+    echo '</pre>';
+}

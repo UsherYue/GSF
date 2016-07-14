@@ -49,15 +49,19 @@ class BaseModel extends Swoole\Model
         }
         $insertValues=null;
         $fields='';
-        foreach($array as $item){
+        foreach($array as &$item){
+            //对每个关键字进行排序
+            ksort($item);
+            if($fields==''){
+                $fields=implode(',',array_keys($item));
+            }
             foreach($item as $k=>&$v){
                 $v='\''.$v.'\'';
             }
             $insertValues[]='('.implode(',',$item).')';
         }
-        $fields=implode(',',array_keys($array[0]));
         $sqlInsert=sprintf("insert  into `$this->table` ($fields) VALUES %s",implode(',',$insertValues));
-        //echo $sqlInsert;
+      // echo $sqlInsert;
         return $this->db->query($sqlInsert);
     }
 
@@ -318,7 +322,7 @@ class BaseModel extends Swoole\Model
         $params['page']=$pageNo ;
         $selectdb = new SelectDB($this->db);
         $selectdb->from($this->table);
-        $selectdb->count_fields=$params['select'];
+        $selectdb->count_fields="*";
         $selectdb->primary = $this->primary;
         $selectdb->select($this->select);
         $selectdb->page_size=$pageSize;

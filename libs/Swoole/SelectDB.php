@@ -541,7 +541,6 @@ class SelectDB
         {
             $this->sql = $sql;
         }
-    //    echo $this->sql;
 
         $this->result = $this->db->query($this->sql);
         $this->is_execute++;
@@ -844,6 +843,7 @@ class SelectDB
 
         $field = substr($field, 0, -1);
         $values = substr($values, 0, -1);
+      // echo "insert into {$this->table} ($field) values($values)";
         return $this->db->query("insert into {$this->table} ($field) values($values)");
     }
 
