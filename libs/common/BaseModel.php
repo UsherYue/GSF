@@ -123,6 +123,15 @@ class BaseModel extends Swoole\Model
         return $this ;
     }
 
+
+    /**
+     * @param $having
+     */
+    public  function  Having($having){
+        //.....等待实现
+    }
+
+
     /**
      * @param $fields
      * @param string $order
@@ -298,6 +307,14 @@ class BaseModel extends Swoole\Model
     }
 
     /**
+     * @param $prm
+     */
+    public function GroupBy($prm){
+        $this->sqlBuilder->groupby($prm);
+            return $this;
+    }
+
+    /**
      * 执行连贯操作
      */
     public function Exec(){
@@ -312,7 +329,7 @@ class BaseModel extends Swoole\Model
      * @return array|bool
      * @throws \Exception
      */
-    public function GetsPage($params, $pageSize=1,$pageNo=1,$htmlOn=true)
+    public function GetsPage($params, $pageSize=1,$pageNo=1,$htmlOn=true,$count_fields="*")
     {
         if (empty($params))
         {
@@ -322,7 +339,7 @@ class BaseModel extends Swoole\Model
         $params['page']=$pageNo ;
         $selectdb = new SelectDB($this->db);
         $selectdb->from($this->table);
-        $selectdb->count_fields="*";
+        $selectdb->count_fields=$count_fields;
         $selectdb->primary = $this->primary;
         $selectdb->select($this->select);
         $selectdb->page_size=$pageSize;
@@ -338,7 +355,6 @@ class BaseModel extends Swoole\Model
             $pager = $selectdb->pager;
         }
         $result=$selectdb->getall();
-
         return [
             'list'=>$result,
             'totle'=>$pager->total,

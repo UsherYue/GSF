@@ -428,7 +428,7 @@ class SelectDB
     function paging()
     {
         $this->num = $this->count();
-        //echo $this->num;
+
         $offset = ($this->page - 1) * $this->page_size;
         if ($offset < 0)
         {
@@ -541,7 +541,7 @@ class SelectDB
         {
             $this->sql = $sql;
         }
-        //echo $this->sql;
+       echo $this->sql;
         $this->result = $this->db->query($this->sql);
         $this->is_execute++;
     }
@@ -811,15 +811,21 @@ class SelectDB
         else
         {
             $_c = $this->db->query($sql);
+           // var_dump($_c);
             if ($_c === false)
             {
                 return false;
             }
             else
             {
-                $c = $_c->fetch();
+                $c = $_c->fetchall();
             }
-            $count = intval($c['c']);
+            //完善分页对于分组分页的支持
+            if(count($c)>1){
+                $count=count($c);
+            }else{
+                $count = intval($c['c']);
+            }
         }
         return $count;
     }

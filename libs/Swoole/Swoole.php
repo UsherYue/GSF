@@ -477,6 +477,7 @@ class Swoole
             return $response;
         }
 
+        //获取全局swoole 对象
         $php = Swoole::getInstance();
 
         //将对象赋值到控制器
@@ -489,9 +490,10 @@ class Swoole
             try
             {
                 ob_start();
-                /*---------------------处理MVC----------------------*/
+                /*--------------------mvc后缓存结果----------------------*/
                 $response->body = $php->runMVC();
                 $response->body .= ob_get_contents();
+                //清空缓存
                 ob_end_clean();
             }
             catch(Swoole\ResponseException $e)

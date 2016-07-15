@@ -25,6 +25,7 @@ class SqlBuilder{
     protected  $_set="";
     protected  $_method;
     protected  $_order="";
+    protected  $_group="";
 
     //执行方式
     const SQL_INSERT=0;
@@ -45,6 +46,7 @@ class SqlBuilder{
         $this->_set="";
         $this->_limit="";
         $this->_order="";
+        $this->_group="";
     }
 
     /**
@@ -76,6 +78,16 @@ class SqlBuilder{
         }
         return $this ;
     }
+
+    /**
+     * @param $prm
+     * @return $this
+     */
+    public  function groupby($prm){
+        $this->_group.=" group by $prm  ";
+        return $this;
+    }
+
 
     /**配合表达式
      * @param array $conditionExpr
@@ -248,6 +260,9 @@ class SqlBuilder{
                 }
                 if($this->_limit){
                     $sqlCmd.=$this->_limit;
+                }
+                if($this->_group){
+                    $sqlCmd.=$this->_group;
                 }
                 break;
             }
