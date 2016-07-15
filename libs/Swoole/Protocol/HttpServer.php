@@ -428,8 +428,12 @@ class HttpServer extends Swoole\Protocol\WebServer implements  Swoole\IFace\Prot
     function doStaticRequest($request, $response)
     {
         $path = explode('/', trim($request->meta['path'], '/'));
+
         //扩展名
         $request->ext_name = $ext_name = Swoole\Upload::getFileExt($request->meta['path']);
+//        var_dump($this->static_dir);
+//        echo $request->ext_name;
+
         /* 检测是否拒绝访问 */
         if (isset($this->deny_dir[$path[0]]))
         {
@@ -452,7 +456,8 @@ class HttpServer extends Swoole\Protocol\WebServer implements  Swoole\IFace\Prot
      */
     function processStatic($request, Swoole\Response $response)
     {
-        $path = $this->document_root . '/' . $request->meta['path'];
+        $path = $this->document_root .  $request->meta['path'];
+       // echo $this->document_root;
         if (is_file($path))
         {
             $read_file = true;

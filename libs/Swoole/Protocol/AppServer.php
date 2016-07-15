@@ -14,11 +14,15 @@ class AppServer extends HttpServer
     protected $router_function;
     protected $apps_path;
 
+    //启动的时候进入
     function onStart($serv)
     {
+        //var_dump($this->config);
         parent::onStart($serv);
+        //mvc path
         if (empty($this->apps_path))
         {
+
             if (!empty($this->config['apps']['apps_path']))
             {
                 $this->apps_path = $this->config['apps']['apps_path'];
@@ -28,8 +32,10 @@ class AppServer extends HttpServer
                 throw new AppServerException("AppServer require apps_path");
             }
         }
+        //创建swoole对象
         $php = Swoole::getInstance();
-        $php->addHook(Swoole::HOOK_CLEAN, function(){
+        //增加钩子函数
+        $php->afterRequest( function(){
             $php = Swoole::getInstance();
             //模板初始化
             if (!empty($php->tpl))
@@ -43,10 +49,21 @@ class AppServer extends HttpServer
                 $php->session->readonly = false;
             }
         });
+        //在路由之前增加钩子 用于进行安全认证 xss  过滤 等等
+        $php->beforeRequest(function(){
+
+
+        });
     }
 
+    /**在请求的时候调用
+     * @param Swoole\Request $request
+     * @return Swoole\Response
+     */
     function onRequest(Swoole\Request $request)
     {
+        //var_dump($request);
+        //收到http请求
         return Swoole::getInstance()->handlerServer($request);
     }
 }

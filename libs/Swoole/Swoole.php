@@ -149,17 +149,19 @@ class Swoole
         if (!defined('DEBUG')) define('DEBUG', 'on');
 
         $this->env['sapi_name'] = php_sapi_name();
+        //如果 接口类型不是cli
         if ($this->env['sapi_name'] != 'cli')
         {
             Swoole\Error::$echo_html = true;
         }
-
+        //定义APPSPATH
         if (defined('APPSPATH'))
         {
             self::$app_path = APPSPATH;
         }
         elseif (defined('WEBPATH'))
         {
+            //app path
             self::$app_path = WEBPATH . '/apps';
             define('APPSPATH', self::$app_path);
         }
@@ -463,8 +465,11 @@ class Swoole
 
     function handlerServer(Swoole\Request $request)
     {
+        //创建一个response
         $response = new Swoole\Response();
+        //初始化全局var
         $request->setGlobal();
+
 
         //处理静态请求
         if (!empty($this->server->config['apps']['do_static']) and $this->server->doStaticRequest($request, $response))

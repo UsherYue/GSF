@@ -22,13 +22,13 @@ define('MVCAPP',true) ;
 //定义web路径
 define('WEBPATH', realpath(__DIR__ ));
 //config file 自定义
-define('CONFIGFILE',__DIR__.'/config/http_config.ini');
+define('CONFIGFILE',WEBPATH.'/config/http_config.ini');
 //Server Log File
-define('LOGFILE',__DIR__ . '/logs/server.log');
+define('LOGFILE',WEBPATH . '/logs/server.log');
 //定义APPPATH
 define('APPPATH',WEBPATH . '/apps/');
 //包含配置文件
-require __DIR__ . '/libs/lib_config.php';
+require WEBPATH . '/libs/lib_config.php';
 //全局配置
 require __DIR__ . '/apps/configs/global.php';
 //关闭debug
@@ -39,11 +39,7 @@ Server::setPidFile(__DIR__ . '/logs/http_server.pid');
  * 启动app server  独立于nginx apache
  * php http_server.php start|stop|reload   //配置默认路由
  */
-Server::start(/**
- *
- */
-    function ()
-{
+Server::start(function(){
     $server = WebServer::create(CONFIGFILE);
     //设置app的configs
     $server->setAppPath(APPPATH);
@@ -53,9 +49,7 @@ Server::start(/**
         $server->daemonize();
     }
     //启动任务
-    $Task=Task::StartTask();
-    //kill task
-    //$Task->kill();
+    //$Task=Task::StartTask();
     //启动服务
     $server->run(array('worker_num' =>1, 'react_num'=>2, 'max_request' => 500000, 'log_file' => LOGFILE));
 });

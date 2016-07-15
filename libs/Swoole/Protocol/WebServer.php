@@ -143,30 +143,35 @@ abstract class WebServer extends Base
 
     static function create($ini_file = null)
     {
+
         $opt = getopt('m:h:p:d:');
-        //mode, server or fastcgi
+        //默认appserver 运行
         if (empty($opt['m']))
         {
             $opt['m'] = 'server';
         }
-        //daemonize
+        //daemonize后台运行
         if (empty($opt['d']))
         {
             $opt['d'] = false;
         }
+        //mode, server or fastcgi -m server  fastcgi 分别代表独立服务器 活着 fastcgi执行
         if ($opt['m'] == 'fastcgi')
         {
+            //创建fpm
             $protocol = new Swoole\Protocol\AppFPM();
         }
         else
         {
+            //创建appserver
             $protocol = new Swoole\Protocol\AppServer();
         }
+        //加载配置文件
         if ($ini_file)
         {
             $protocol->loadSetting($ini_file); //加载配置文件
         }
-        //port
+        //优先通过命令行设置端口  默认8888
         if (!empty($opt['p']))
         {
             $protocol->default_port = $opt['p'];
@@ -179,7 +184,7 @@ abstract class WebServer extends Base
         {
             $protocol->default_port = self::DEFAULT_PORT;
         }
-        //host
+        //ip
         if (!empty($opt['h']))
         {
             $protocol->default_host = $opt['h'];
@@ -192,15 +197,15 @@ abstract class WebServer extends Base
         {
             $protocol->default_host = self::DEFAULT_HOST;
         }
-
+        //创建swoole_server
         $server = Swoole\Network\Server::autoCreate($protocol->default_host, $protocol->default_port);
+        //设置协议
         $server->setProtocol($protocol);
-
+        //配置服 workthread 数目
         if (!empty($protocol->config['server']['worker_num']))
         {
             $server->runtimeSetting['worker_num'] = $protocol->config['server']['worker_num'];
         }
-
         return $protocol;
     }
 }

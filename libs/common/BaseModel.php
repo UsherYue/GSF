@@ -338,6 +338,7 @@ class BaseModel extends Swoole\Model
             $pager = $selectdb->pager;
         }
         $result=$selectdb->getall();
+
         return [
             'list'=>$result,
             'totle'=>$pager->total,

@@ -224,11 +224,12 @@ class Server extends Base implements Driver
         {
             self::$swooleMode = SWOOLE_BASE;
         }
+        //判断是否已经加载swoole扩展
         elseif (extension_loaded('swoole'))
         {
             self::$swooleMode = SWOOLE_PROCESS;
         }
-
+        //创建swoole_server
         $this->sw = new \swoole_server($host, $port, self::$swooleMode, $flag);
         $this->host = $host;
         $this->port = $port;
