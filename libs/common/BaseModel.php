@@ -61,7 +61,7 @@ class BaseModel extends Swoole\Model
             $insertValues[]='('.implode(',',$item).')';
         }
         $sqlInsert=sprintf("insert  into `$this->table` ($fields) VALUES %s",implode(',',$insertValues));
-      // echo $sqlInsert;
+    //echo $sqlInsert;
         return $this->db->query($sqlInsert);
     }
 
@@ -89,7 +89,6 @@ class BaseModel extends Swoole\Model
         //var_dump($prms);
         $condition=implode(' and ',$arrSetExpr);
         $sql=($condition==''?$sql:$sql.'  where '.$condition);
-
         return $this->db->query($sql);
 
     }
@@ -114,189 +113,6 @@ class BaseModel extends Swoole\Model
         return $this->db->query($sql);
     }
 
-    /**
-     * @param array $fields
-     * @return $this
-     */
-    public function Select($fields=array()){
-        $this->sqlBuilder->select($fields);
-        return $this ;
-    }
-
-
-    /**
-     * @param $having
-     */
-    public  function  Having($having){
-        //.....等待实现
-    }
-
-
-    /**
-     * @param $fields
-     * @param string $order
-     */
-    public  function OrderBy($fields,$order='desc'){
-        $this->sqlBuilder->orderby($fields,$order);
-        return $this;
-    }
-
-    /**
-     * @param array $tables
-     * @return $this
-     */
-    public function  From($tables=""){
-        if(is_string($tables)){
-            if($tables=="")
-                $this->sqlBuilder->from($this->table);
-            else
-                $this->sqlBuilder->from($tables);
-        }else if(is_array($tables)){
-            $this->sqlBuilder->from($tables);
-        }
-
-        return $this ;
-    }
-
-    /**配合表达式
-     * @param array $conditionExpr
-     * @return $this
-     */
-    public function Wheres($conditionExpr=array()){
-        //拼接expr
-        $this->sqlBuilder->wheres($conditionExpr);
-        return $this ;
-    }
-
-    /**
-     * @param $conditon
-     * @return $this
-     */
-    public function Where($conditon){
-        $this->sqlBuilder->where($conditon);
-        return $this ;
-    }
-
-    /**
-     * @param $field
-     * @return $this
-     */
-    public  function And_($field){
-        $this->sqlBuilder->and_($field);
-        return $this ;
-    }
-
-    /**
-     * @param $arr
-     */
-    public  function In($arr){
-        $this->sqlBuilder->in($arr);
-        return $this ;
-    }
-
-
-    /**
-     * @param $conditon
-     * @return $this
-     */
-    public function WhereAnd($condition){
-        $this->sqlBuilder->whereAnd($condition);
-        return $this ;
-    }
-
-
-    /**
-     * @param $conditon
-     * @return $this
-     */
-    public function  WhereOr($conditon){
-        $this->sqlBuilder->whereOr($conditon);
-        return $this ;
-    }
-
-
-    /**
-     * @param $condition
-     * @return $this
-     */
-    public function  On($condition){
-        $this->sqlBuilder->on($condition);
-        return $this ;
-    }
-
-    /**
-     * @param $tablename
-     * @param string $join_type
-     * @return $this
-     */
-    public function Join($tablename,$join_type='join'){
-        $this->sqlBuilder->join($tablename,$join_type);
-        return $this ;
-    }
-
-    /**
-     * @param $condition
-     * @return $this
-     */
-    public function OnAnd($condition){
-        $this->sqlBuilder->onAnd($condition);
-        return $this ;
-    }
-
-    /**
-     * @param $condition
-     * @return $this
-     */
-    public function OnOr($condition){
-        $this->sqlBuilder->onOr($condition);
-        return $this ;
-    }
-
-    /**
-     * @param array $tables
-     * @return $this
-     */
-    public function Update($tables){
-        $this->sqlBuilder->update($tables);
-        return $this ;
-    }
-
-    /**
-     * @param array $conditionExpr
-     * @return $this
-     */
-    public function  Set($conditionExpr=array()){
-        $this->sqlBuilder->set($conditionExpr);
-        return $this ;
-    }
-
-    /**
-     * @param array $fields
-     * @param array $values
-     */
-    public function Values($values=[[]]){
-        $this->sqlBuilder->values($values);
-        return $this ;
-    }
-
-
-    public function InsertInto($table,$fields=[]){
-        $this->sqlBuilder->insertinto($table,$fields);
-        return $this ;
-    }
-
-    /**
-     * @param $num
-     * @param int $offset
-     * @return $this
-     */
-    public function Limit($num,$offset=0){
-        if($offset<=0)
-             $this->sqlBuilder->limit($num);
-        else
-            $this->sqlBuilder->limit($num,$offset);
-        return $this ;
-    }
 
     /**
      * sql
@@ -304,21 +120,6 @@ class BaseModel extends Swoole\Model
      */
     public function Sql(){
         return $this->sqlBuilder->sql();
-    }
-
-    /**
-     * @param $prm
-     */
-    public function GroupBy($prm){
-        $this->sqlBuilder->groupby($prm);
-            return $this;
-    }
-
-    /**
-     * 执行连贯操作
-     */
-    public function Exec(){
-        return $this->ExecuteSQL($this->sqlBuilder->sql());
     }
 
     /**分页查询

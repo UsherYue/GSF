@@ -12,6 +12,8 @@ use Swoole;
 
 class BaseController extends  Swoole\Controller{
 
+
+
     /**
      * @param $key
      * @return null

@@ -541,7 +541,7 @@ class SelectDB
         {
             $this->sql = $sql;
         }
-       echo $this->sql;
+       //echo $this->sql;
         $this->result = $this->db->query($this->sql);
         $this->is_execute++;
     }
@@ -797,6 +797,7 @@ class SelectDB
     public function count()
     {
         $sql = "select count({$this->count_fields}) as c from {$this->table} {$this->join} {$this->where} {$this->union} {$this->group}";
+      // echo $sql;
         if ($this->if_union)
         {
             $sql = str_replace('{#union_select#}', "count({$this->count_fields}) as c", $sql);
@@ -824,7 +825,7 @@ class SelectDB
             if(count($c)>1){
                 $count=count($c);
             }else{
-                $count = intval($c['c']);
+                $count = intval($c[0]['c']);
             }
         }
         return $count;
@@ -849,7 +850,7 @@ class SelectDB
 
         $field = substr($field, 0, -1);
         $values = substr($values, 0, -1);
-       //echo "insert into {$this->table} ($field) values($values)";
+     //  echo "insert into {$this->table} ($field) values($values)";
         return $this->db->query("insert into {$this->table} ($field) values($values)");
     }
 

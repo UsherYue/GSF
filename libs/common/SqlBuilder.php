@@ -26,6 +26,7 @@ class SqlBuilder{
     protected  $_method;
     protected  $_order="";
     protected  $_group="";
+    protected  $_having="";
 
     //执行方式
     const SQL_INSERT=0;
@@ -46,6 +47,7 @@ class SqlBuilder{
         $this->_set="";
         $this->_limit="";
         $this->_order="";
+        $this->_having="";
         $this->_group="";
     }
 
@@ -264,6 +266,9 @@ class SqlBuilder{
                 if($this->_group){
                     $sqlCmd.=$this->_group;
                 }
+                if($this->_having){
+                    $sqlCmd.=$this->_having;
+                }
                 break;
             }
             case SqlBuilder::SQL_UPDATE:
@@ -320,6 +325,18 @@ class SqlBuilder{
             }
         }else if(is_string($fields)){
             $this->_insert.= " ($fields)  ";
+        }
+        return $this;
+    }
+
+    /**
+     * @param $expr
+     */
+    public function having($expr=""){
+        if(is_string($expr)){
+            $this->_having=$expr;
+        }elseif(is_array($expr)){
+            $this->_having=" having ".implode(" and ",$expr);
         }
         return $this;
     }

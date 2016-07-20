@@ -83,7 +83,7 @@ class Controller extends Object
      */
     function json($data = '', $code = 0, $message = '')
     {
-        $json = array('code' => $code, 'message' => $message, 'data' => $data);
+        $json = array('status' => $code, 'info' => $message, 'data' => $data);
         if (!empty($_REQUEST['jsonp']))
         {
             $this->http->header('Content-type', 'application/x-javascript');
@@ -98,7 +98,7 @@ class Controller extends Object
 
     function message($code = 0, $msg = 'success')
     {
-        $ret = array('code' => $code, 'message' => $msg);
+        $ret = array('status' => $code, 'info' => $msg);
         return $this->is_ajax ? $ret : json_encode($ret);
     }
 
