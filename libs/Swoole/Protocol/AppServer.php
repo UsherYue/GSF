@@ -14,7 +14,7 @@ class AppServer extends HttpServer
     protected $router_function;
     protected $apps_path;
 
-    //启动的时候进入
+    //启动的时候进入   swoole c扩展中处理
     function onStart($serv)
     {
         //var_dump($this->config);
@@ -49,21 +49,18 @@ class AppServer extends HttpServer
                 $php->session->readonly = false;
             }
         });
-        //在路由之前增加钩子 用于进行安全认证 xss  过滤 等等
-        $php->beforeRequest(function(){
 
-
-        });
     }
 
     /**在请求的时候调用
      * @param Swoole\Request $request
      * @return Swoole\Response
      */
-    function onRequest(Swoole\Request $request)
+    function onRequest(Swoole\Request &$request)
     {
         //var_dump($request);
         //收到http请求
+
         return Swoole::getInstance()->handlerServer($request);
     }
 }

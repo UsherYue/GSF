@@ -175,10 +175,18 @@ function doLoader($pathtree){
 }
 // laod mvc ext
 if(defined('MVCAPP')){
-    //load class
-    $path1=commonLoader("./libs/common");
-    $path2=commonLoader("./apps/common");
-    $path3=commonLoader("./apps/tasks");
-    doLoader(array_merge_recursive($path1,$path2,$path3));
+    $loader=array_merge_recursive(
+        commonLoader(WEBPATH."/libs/common"),
+        commonLoader(WEBPATH."/apps/common"),
+        commonLoader(WEBPATH."/apps/tasks")
+    );
+    doLoader($loader);
 }
 
+//在路由之前增加钩子 用于进行安全认证 xss  过滤 等等
+//用于全局路由之前
+$php->beforeRequest(function(){
+     $php = Swoole::getInstance();
+    //判断xss开关是否开启 开启之后过滤 xss
+
+});

@@ -113,3 +113,6 @@ function Dumps($value){
     var_dump($value);
     echo '</pre>';
 }
+
+
+?>

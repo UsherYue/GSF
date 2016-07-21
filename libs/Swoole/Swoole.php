@@ -463,7 +463,7 @@ class Swoole
         }
     }
 
-    function handlerServer(Swoole\Request $request)
+    function handlerServer(Swoole\Request &$request)
     {
         //创建一个response
         $response = new Swoole\Response();
@@ -480,11 +480,10 @@ class Swoole
         //获取全局swoole 对象
         $php = Swoole::getInstance();
 
+
         //将对象赋值到控制器
         $php->request = $request;
         $php->response = $response;
-        // var_dump(  $php->request);
-
         try
         {
             try
@@ -492,13 +491,16 @@ class Swoole
                 ob_start();
                 /*--------------------mvc后缓存结果----------------------*/
                 $response->body = $php->runMVC();
+                //获取缓存
                 $response->body .= ob_get_contents();
                 //清空缓存
                 ob_end_clean();
             }
             catch(Swoole\ResponseException $e)
             {
-                if ($request->finish != 1)
+                //修改swoole 在请求之前终止输出的bug
+                $php = Swoole::getInstance();
+                if ($php->request->finish != 1)
                 {
                     $this->server->httpError(500, $response, $e->getMessage());
                 }
@@ -509,7 +511,8 @@ class Swoole
             $this->server->httpError(500, $response, $e->getMessage()."<hr />".nl2br($e->getTraceAsString()));
         }
 
-        //重定向
+        //重定向 $php->header
+        //$php->http->header("Location",'http://www.baidu.com');
         if (isset($response->head['Location']) and ($response->http_status < 300 or $response->http_status > 399))
         {
             $response->setHttpStatus(301);
@@ -611,9 +614,26 @@ class Swoole
 
         $param = empty($mvc['param']) ? null : $mvc['param'];
         $method = $mvc['view'];
-        // var_dump($param);
-        //doAction
+        /***************参数过滤********************/
+        $beforeReqMethod='BeforeRequest';
+        $afterReqMethod='AfterRequest';
+        $xssFilterMethod='__xssDo';
+        $escapeFilterMethod='__escapeDo';
+        $controller->$beforeReqMethod();
+        //控制器局部是否开启xss  默认关闭 可以开启
+        $uses=class_uses($controller,true);
+        if(in_array('App\Controller\XssClean',$uses)){
+            //使用了Xss
+           $controller->$xssFilterMethod();
+        }
+        if(in_array('App\Controller\HtmlEscape',$uses)){
+            //使用了Xss
+            $controller->$escapeFilterMethod();
+        }
+        /***************参数过滤结束********************/
+        //获取返回数据
         $return = $controller->$method($param);
+        $controller->$afterReqMethod();
         //保存Session
         if (defined('SWOOLE_SERVER') and $this->session->open and $this->session->readonly === false)
         {

@@ -318,7 +318,8 @@ class SelectDB
             //去掉两边的分号
             $ins = trim($ins, ',');
         }
-        $this->where("`$field` in ({$ins})");
+        //``去掉该处待完善
+        $this->where("$field in ({$ins})");
     }
 
     /**
@@ -850,7 +851,7 @@ class SelectDB
 
         $field = substr($field, 0, -1);
         $values = substr($values, 0, -1);
-     //  echo "insert into {$this->table} ($field) values($values)";
+     // echo "insert into {$this->table} ($field) values($values)";
         return $this->db->query("insert into {$this->table} ($field) values($values)");
     }
 
