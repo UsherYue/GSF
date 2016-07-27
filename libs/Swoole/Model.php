@@ -89,12 +89,10 @@ class Model
 	 */
 	public function gets($params, &$pager=null)
 	{
-
 		if (empty($params))
 		{
 			throw new \Exception("no params.");
 		}
-
 		$selectdb = new SelectDB($this->db);
 		$selectdb->from($this->table);
 		$selectdb->primary = $this->primary;
@@ -113,7 +111,6 @@ class Model
 			$pager = $selectdb->pager;
 
 		}
-
 		return $selectdb->getall();
 	}
 

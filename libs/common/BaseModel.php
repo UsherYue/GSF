@@ -65,30 +65,52 @@ class BaseModel extends Swoole\Model
         return $this->db->query($sqlInsert);
     }
 
-    /**通过表达式进行update是针对update的一个扩展
+    /**通过表达式进行update是针对update的一个扩展 支持不同情况
      * @param $data
      * @param $prm
      */
     function  SetWithExpr($data,$prms){
         $sql="update {$this->table} set " ;
-        //拼接expr
-        if(array_key_exists('expr',$data)){
-            $sql.=$data['expr'];
-            unset($data['expr']);
+        if(is_string($data)){
+            $sql.=$data;
+        }elseif(is_array($data)){
+            //拼接expr数组情况下
+            if(array_key_exists('expr',$data)){
+                $sql.=$data['expr'];
+                unset($data['expr']);
+            }
+            $arrSetExpr=[];
+            //判断是关联数组还是索引数组
+            if(is_assoc($data)){
+                foreach($data as $k=>$v){
+                    $arrSetExpr[]="$k='$v'";
+                }
+            }else{
+                foreach($data as $v){
+                    $arrSetExpr[]=$v;
+                }
+            }
+            $condition=implode(',',$arrSetExpr);
+            $sql=($condition==''?$sql:$sql.$condition);
         }
-        $arrSetExpr=[];
-        foreach($data as $k=>$v){
-            $arrSetExpr[]="$k='$v'";
+        if(is_string($prms)){
+            $sql.=" where $prms";
+        }elseif(is_array($prms)){
+            $arrSetExpr=[];
+            //判断是关联数组还是索引数组
+            if(is_assoc($prms)){
+                foreach($prms as $k=>$v){
+                    $arrSetExpr[]="$k='$v'";
+                }
+            }else{
+                foreach($prms as $v){
+                    $arrSetExpr[]=$v;
+                }
+            }
+            //var_dump($prms);
+            $condition=implode(' and ',$arrSetExpr);
+            $sql=($condition==''?$sql:$sql.'  where '.$condition);
         }
-        $condition=implode(',',$arrSetExpr);
-        $sql=($condition==''?$sql:$sql.','.$condition);
-        $arrSetExpr=[];
-        foreach($prms as $k=>$v){
-            $arrSetExpr[]="$k='$v'";
-        }
-        //var_dump($prms);
-        $condition=implode(' and ',$arrSetExpr);
-        $sql=($condition==''?$sql:$sql.'  where '.$condition);
         return $this->db->query($sql);
 
     }
@@ -111,6 +133,30 @@ class BaseModel extends Swoole\Model
      */
     public  function  ExecuteSQL($sql){
         return $this->db->query($sql);
+    }
+
+
+    /**根据字段获取
+     * @param $fields
+     * @param $id
+     * @param string $where
+     * @return array
+     * @throws \Exception
+     */
+    public function GetFieldByID($fields,$id,$where='id',$limit=''){
+        if($limit==''){
+            $result= $this->gets([
+                'select'=>$fields,
+                $where=>$id,
+            ]);
+        }else{
+            $result= $this->gets([
+                'select'=>$fields,
+                $where=>$id,
+                'limit'=>$limit
+            ]);
+        }
+        return empty($result)?$result:$result[0];
     }
 
 
@@ -144,11 +190,11 @@ class BaseModel extends Swoole\Model
         $selectdb->primary = $this->primary;
         $selectdb->select($this->select);
         $selectdb->page_size=$pageSize;
-        //如果没有设置order 默认主键排序
-        if (!isset($params['order']))
-        {
-            $params['order'] = "`{$this->table}`.{$this->primary} desc";
-        }
+        //如果没有设置order 默认主键排序 默认是id 如果需要可自己设置order
+//        if (!isset($params['order']))
+//        {
+//            $params['order'] = "`{$this->table}`.{$this->primary} desc";
+//        }
         $selectdb->put($params);
         if (isset($params['page']))
         {

@@ -83,7 +83,7 @@ function http_get($url){
 function http_post($url,$postForm, $ip = null, $timeout = 10){
     $curl=new CURL() ;
     $data=$curl->post($url, $postForm, $ip, $timeout );
-    return data;
+    return $data;
 }
 
 /**创建进程
@@ -112,6 +112,25 @@ function Dumps($value){
     echo '<pre>';
     var_dump($value);
     echo '</pre>';
+}
+
+/**从html文本中提取元素
+ * @param $tagname
+ * @param $html
+ */
+function GetDomByTagname($tagname,$html){
+    preg_match_all("/<\s*".$tagname."\s+(([^><]+){1})?\s*>(.+)<\s*\/\s*".$tagname."\s*>/uU",$html,$match,PREG_SET_ORDER);
+    $count=0;
+    $result=[];
+    foreach($match as $item){
+        preg_match_all("/\w+=\s*[\"']\s*[\S _-]*\s*[\"']\s*/U",$item[1],$subMatch,PREG_SET_ORDER);
+        foreach($subMatch as $v){
+            $tmpStr=trim($v[0]);
+            $kv=explode("=",$tmpStr);
+            $result[$item[3]][]=[$kv[0]=>preg_replace('/[\'""]/',"",trim($kv[1]))];
+        }
+    }
+    return $result;
 }
 
 

@@ -232,11 +232,19 @@ class SqlBuilder{
                 $this->_set.=$conditionExpr['expr'];
                 unset($conditionExpr['expr']);
             }
-
-            $arrSetExpr=[];
-            foreach($conditionExpr as $k=>$v){
-                $arrSetExpr[]="$k='$v'";
+            if(is_assoc($conditionExpr)){
+                foreach($conditionExpr as $k=>$v){
+                    $arrSetExpr[]="$k='$v'";
+                }
+            }else{
+                foreach($conditionExpr as $v){
+                    $arrSetExpr[]=$v;
+                }
             }
+//            $arrSetExpr=[];
+//            foreach($conditionExpr as $k=>$v){
+//                $arrSetExpr[]="$k='$v'";
+//            }
             $condition=implode(' , ',$arrSetExpr);
             $this->_set=($this->_set==''?$condition:$this->_set.' , '.$condition);
         }else if(is_string($conditionExpr)){
@@ -364,6 +372,60 @@ class SqlBuilder{
         return $this ;
     }
 
+
+    /**set产生语句
+     * @param $table
+     * @param $data
+     * @param $prms
+     * @return string
+     */
+    public static function GenericUpdateSql($table,$data,$prms){
+        $sql="update {$table} set " ;
+        if(is_string($data)){
+            $sql.=$data;
+        }elseif(is_array($data)){
+            //拼接expr数组情况下
+            if(array_key_exists('expr',$data)){
+                $sql.=$data['expr'];
+                unset($data['expr']);
+            }
+            $arrSetExpr=[];
+            //判断是关联数组还是索引数组
+            if(is_assoc($data)){
+                foreach($data as $k=>$v){
+                    $arrSetExpr[]="$k='$v'";
+                }
+            }else{
+                foreach($data as $v){
+                    $arrSetExpr[]=$v;
+                }
+            }
+            $condition=implode(',',$arrSetExpr);
+            $sql=($condition==''?$sql:$sql.$condition);
+        }
+        if(is_string($prms)){
+            $sql.=" where $prms";
+        }elseif(is_array($prms)){
+            $arrSetExpr=[];
+            //判断是关联数组还是索引数组
+            if(is_assoc($prms)){
+                foreach($prms as $k=>$v){
+                    $arrSetExpr[]="$k='$v'";
+                }
+            }else{
+                foreach($prms as $v){
+                    $arrSetExpr[]=$v;
+                }
+            }
+            //var_dump($prms);
+            $condition=implode(' and ',$arrSetExpr);
+            $sql=($condition==''?$sql:$sql.'  where '.$condition);
+        }
+        return $sql;
+    }
+
+
+
 }
 
 //$builder=new SqlBuilder() ;
@@ -378,3 +440,7 @@ class SqlBuilder{
 //echo $builder->select("*")->from("a,b as 3")->join("b")->on(['ccsxx'=>34566,'dss'=>"3"])->where(["a4"=>12,"2b"=>32,"c23"=>"42"])->and_("b=2")->and_(["a"=>1,"b"=>2,"c"=>"4"])->and_("s")->in([1,2,3,43,2,77])->orderby("cc desc")->limit(1,2)->sql();
 //echo $builder->insertinto("a","c,d,s,d,e")->values([[1,2,3,4,5],[2,3,4,5,6],[32,43,43,43]])->sql();
 //echo $builder->update("a")->set("a=1,b=4,c=c+1")->where("c>c+1")->and_("c<6")->sql();
+
+//echo $builder->update("a,b")->set(['a'=>3,'b'=>1,'expr'=>'c=c-1'])->where("cc>11")->sql();
+//echo $builder->update("a,b")->set(['a=1','b=3'])->where("cc>11")->sql();
+//echo $builder->GenericUpdateSql('sss',"a=1",'b=4');
