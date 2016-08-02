@@ -8,24 +8,29 @@
  * 心怀教育梦－烟台网格软件技术有限公司
  */
 namespace App\Model;
+
 use Swoole;
 use \SqlBuilder;
 use Swoole\SelectDB;
+
 /*
  * @property  $sqlBuilder \SqlBuilder
  */
+
 class BaseModel extends Swoole\Model
 {
-    public $primary ='id';
+    public $primary = 'id';
     public $foreignkey = 'fid';
     /**sql builder
      * @var \SqlBuilder
      */
     public $sqlBuilder;
+
     /**
      * @return \SqlBuilder
      */
-    public   function sqlBuilder(){
+    public function sqlBuilder()
+    {
         return $this->sqlBuilder;
     }
 
@@ -35,33 +40,34 @@ class BaseModel extends Swoole\Model
      */
     function __construct(\Swoole $swoole, $db_key = 'master')
     {
-        $this->sqlBuilder=new SqlBuilder();
-        parent::__construct($swoole,$db_key);
+        $this->sqlBuilder = new SqlBuilder();
+        parent::__construct($swoole, $db_key);
     }
 
     /**mulity insert
      * @param $array
      * @param bool|false $delay 是否延迟插入
      */
-    function Puts($array) {
-        if($array==null||!is_array($array)){
-            return false ;
+    function Puts($array)
+    {
+        if ($array == null || !is_array($array)) {
+            return false;
         }
-        $insertValues=null;
-        $fields='';
-        foreach($array as &$item){
+        $insertValues = null;
+        $fields = '';
+        foreach ($array as &$item) {
             //对每个关键字进行排序
             ksort($item);
-            if($fields==''){
-                $fields=implode(',',array_keys($item));
+            if ($fields == '') {
+                $fields = implode(',', array_keys($item));
             }
-            foreach($item as $k=>&$v){
-                $v='\''.$v.'\'';
+            foreach ($item as $k => &$v) {
+                $v = '\'' . $v . '\'';
             }
-            $insertValues[]='('.implode(',',$item).')';
+            $insertValues[] = '(' . implode(',', $item) . ')';
         }
-        $sqlInsert=sprintf("insert  into `$this->table` ($fields) VALUES %s",implode(',',$insertValues));
-    //echo $sqlInsert;
+        $sqlInsert = sprintf("insert  into `$this->table` ($fields) VALUES %s", implode(',', $insertValues));
+        //echo $sqlInsert;
         return $this->db->query($sqlInsert);
     }
 
@@ -69,47 +75,48 @@ class BaseModel extends Swoole\Model
      * @param $data
      * @param $prm
      */
-    function  SetWithExpr($data,$prms){
-        $sql="update {$this->table} set " ;
-        if(is_string($data)){
-            $sql.=$data;
-        }elseif(is_array($data)){
+    function  SetWithExpr($data, $prms)
+    {
+        $sql = "update {$this->table} set ";
+        if (is_string($data)) {
+            $sql .= $data;
+        } elseif (is_array($data)) {
             //拼接expr数组情况下
-            if(array_key_exists('expr',$data)){
-                $sql.=$data['expr'];
+            if (array_key_exists('expr', $data)) {
+                $sql .= $data['expr'];
                 unset($data['expr']);
             }
-            $arrSetExpr=[];
+            $arrSetExpr = [];
             //判断是关联数组还是索引数组
-            if(is_assoc($data)){
-                foreach($data as $k=>$v){
-                    $arrSetExpr[]="$k='$v'";
+            if (is_assoc($data)) {
+                foreach ($data as $k => $v) {
+                    $arrSetExpr[] = "$k='$v'";
                 }
-            }else{
-                foreach($data as $v){
-                    $arrSetExpr[]=$v;
+            } else {
+                foreach ($data as $v) {
+                    $arrSetExpr[] = $v;
                 }
             }
-            $condition=implode(',',$arrSetExpr);
-            $sql=($condition==''?$sql:$sql.$condition);
+            $condition = implode(',', $arrSetExpr);
+            $sql = ($condition == '' ? $sql : $sql . $condition);
         }
-        if(is_string($prms)){
-            $sql.=" where $prms";
-        }elseif(is_array($prms)){
-            $arrSetExpr=[];
+        if (is_string($prms)) {
+            $sql .= " where $prms";
+        } elseif (is_array($prms)) {
+            $arrSetExpr = [];
             //判断是关联数组还是索引数组
-            if(is_assoc($prms)){
-                foreach($prms as $k=>$v){
-                    $arrSetExpr[]="$k='$v'";
+            if (is_assoc($prms)) {
+                foreach ($prms as $k => $v) {
+                    $arrSetExpr[] = "$k='$v'";
                 }
-            }else{
-                foreach($prms as $v){
-                    $arrSetExpr[]=$v;
+            } else {
+                foreach ($prms as $v) {
+                    $arrSetExpr[] = $v;
                 }
             }
             //var_dump($prms);
-            $condition=implode(' and ',$arrSetExpr);
-            $sql=($condition==''?$sql:$sql.'  where '.$condition);
+            $condition = implode(' and ', $arrSetExpr);
+            $sql = ($condition == '' ? $sql : $sql . '  where ' . $condition);
         }
         return $this->db->query($sql);
 
@@ -118,10 +125,11 @@ class BaseModel extends Swoole\Model
 
     /**直接根据表名字创建 BaseModel
      * @param $table_name
-     * @param string $db_key  master slave
+     * @param string $db_key master slave
      * @return BaseModel
      */
-    static function Table($table_name,$db_key='master'){
+    static function Table($table_name, $db_key = 'master')
+    {
         $model = new BaseModel(Swoole::getInstance()->model->swoole, $db_key);
         $model->table = $table_name;
         return $model;
@@ -131,7 +139,8 @@ class BaseModel extends Swoole\Model
      * @param $sql
      * @return Swoole\Database\MySQLiRecord
      */
-    public  function  ExecuteSQL($sql){
+    public function  ExecuteSQL($sql)
+    {
         return $this->db->query($sql);
     }
 
@@ -143,20 +152,21 @@ class BaseModel extends Swoole\Model
      * @return array
      * @throws \Exception
      */
-    public function GetFieldByID($fields,$id,$where='id',$limit=''){
-        if($limit==''){
-            $result= $this->gets([
-                'select'=>$fields,
-                $where=>$id,
+    public function GetFieldByID($fields, $id, $where = 'id', $limit = '')
+    {
+        if ($limit == '') {
+            $result = $this->gets([
+                'select' => $fields,
+                $where => $id,
             ]);
-        }else{
-            $result= $this->gets([
-                'select'=>$fields,
-                $where=>$id,
-                'limit'=>$limit
+        } else {
+            $result = $this->gets([
+                'select' => $fields,
+                $where => $id,
+                'limit' => $limit
             ]);
         }
-        return empty($result)?$result:$result[0];
+        return empty($result) ? $result : $result[0];
     }
 
 
@@ -164,7 +174,8 @@ class BaseModel extends Swoole\Model
      * sql
      * @return string
      */
-    public function Sql(){
+    public function Sql()
+    {
         return $this->sqlBuilder->sql();
     }
 
@@ -176,44 +187,39 @@ class BaseModel extends Swoole\Model
      * @return array|bool
      * @throws \Exception
      */
-    public function GetsPage($params, $pageSize=1,$pageNo=1,$htmlOn=true,$count_fields="*")
+    public function GetsPage($params, $pageSize = 1, $pageNo = 1, $htmlOn = true, $count_fields = "*")
     {
-        if (empty($params))
-        {
+        if (empty($params)) {
             throw new \Exception("no params.");
         }
-        $pager=null;
-        $params['page']=$pageNo ;
+        $pager = null;
+        $params['page'] = $pageNo;
         $selectdb = new SelectDB($this->db);
         $selectdb->from($this->table);
-        $selectdb->count_fields=$count_fields;
+        $selectdb->count_fields = $count_fields;
         $selectdb->primary = $this->primary;
         $selectdb->select($this->select);
-        $selectdb->page_size=$pageSize;
+        $selectdb->page_size = $pageSize;
         //如果没有设置order 默认主键排序 默认是id 如果需要可自己设置order
 //        if (!isset($params['order']))
 //        {
 //            $params['order'] = "`{$this->table}`.{$this->primary} desc";
 //        }
         $selectdb->put($params);
-        if (isset($params['page']))
-        {
+        if (isset($params['page'])) {
             $selectdb->paging();
             $pager = $selectdb->pager;
         }
-        $result=$selectdb->getall();
+        $result = $selectdb->getall();
         return [
-            'list'=>$result,
-            'totle'=>$pager->total,
-            'totlepage'=>$pager->totalpage,
-            'page'=>$htmlOn?$pager->render():"",
-            'pagesize'=>$pager->pagesize,
-            'current'=>$pager->page
+            'list' => $result,
+            'totle' => $pager->total,
+            'totlepage' => $pager->totalpage,
+            'page' => $htmlOn ? $pager->render() : "",
+            'pagesize' => $pager->pagesize,
+            'current' => $pager->page
         ];
     }
-
-
-
 
 
 }

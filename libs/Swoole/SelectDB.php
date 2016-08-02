@@ -495,11 +495,13 @@ class SelectDB
         if ($this->if_union)
         {
             $this->sql = str_replace('{#union_select#}', $this->union_select, $this->sql);
+
         }
         if ($ifreturn)
         {
             return $this->sql;
         }
+
     }
 
     function raw_put($params)
@@ -537,12 +539,13 @@ class SelectDB
         if ($sql == '')
         {
             $this->getsql(false);
+          //  echo $this->sql;
         }
         else
         {
             $this->sql = $sql;
         }
-   // echo $this->sql;
+
         $this->result = $this->db->query($this->sql);
         $this->is_execute++;
     }
@@ -607,12 +610,12 @@ class SelectDB
             }
             unset($params['walk']);
         }
+
         //处理其他参数
         foreach ($params as $key => $value)
         {
             if (strpos($key, '_') !== 0)
             {
-
                 $this->_call($key, $value);
             }
             else
@@ -629,6 +632,7 @@ class SelectDB
      */
     protected function _call($method, $param)
     {
+
         if ($method == 'update' or $method == 'delete' or $method == 'insert')
         {
             return false;
@@ -637,7 +641,7 @@ class SelectDB
         //调用对应的方法
         if (method_exists($this, $method))
         {
-            if (is_array($param))
+            if (!is_assoc($param))
             {
                 //多次调用 扩展数组支持
                 if(count($param)>0&&is_array($param[0])){
@@ -756,11 +760,14 @@ class SelectDB
             //指定使用哪个Cache实例
             if (empty($this->cacheOptions['object_id']))
             {
+
                 $cacheObject = \Swoole::$php->cache;
             }
             else
             {
+                //($this->cacheOptions['object_id']);
                 $cacheObject = \Swoole::$php->cache($this->cacheOptions['object_id']);
+
             }
             //指定缓存的生命周期
             if (empty($this->cacheOptions['lifetime']))
@@ -773,6 +780,7 @@ class SelectDB
             }
 
             $data = $cacheObject->get($cache_key);
+
             //Cache数据为空，从DB中拉取
             if (empty($data))
             {
@@ -782,6 +790,7 @@ class SelectDB
             }
             else
             {
+               // var_dump($data);
                 return $data;
             }
         }
@@ -797,10 +806,11 @@ class SelectDB
      */
     public function count()
     {
-        $sql = "select count({$this->count_fields}) as c from {$this->table} {$this->join} {$this->where} {$this->union} {$this->group}";
-      // echo $sql;
+
         if ($this->if_union)
         {
+            //修改union 分页bug
+            $sql = "select count({$this->count_fields}) as c from (select {$this->select} from {$this->table} {$this->join} {$this->where} {$this->union} {$this->group}) as unionresult";
             $sql = str_replace('{#union_select#}', "count({$this->count_fields}) as c", $sql);
             $c = $this->db->query($sql)->fetchall();
             $cc = 0;
@@ -812,8 +822,9 @@ class SelectDB
         }
         else
         {
+            $sql = "select count({$this->count_fields}) as c from {$this->table} {$this->join} {$this->where} {$this->union} {$this->group}";
+          //  echo $sql;
             $_c = $this->db->query($sql);
-           // var_dump($_c);
             if ($_c === false)
             {
                 return false;
@@ -822,6 +833,7 @@ class SelectDB
             {
                 $c = $_c->fetchall();
             }
+          //  var_dump($c);
             //完善分页对于分组分页的支持
             if(count($c)>1){
                 $count=count($c);
@@ -851,7 +863,7 @@ class SelectDB
 
         $field = substr($field, 0, -1);
         $values = substr($values, 0, -1);
-    // echo "insert into {$this->table} ($field) values($values)";
+  //  echo "insert into {$this->table} ($field) values($values)";
         return $this->db->query("insert into {$this->table} ($field) values($values)");
     }
 

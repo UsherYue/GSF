@@ -18,14 +18,15 @@ use Swoole\Client\CURL;
  * @param $key
  * @return bool
  */
-function C($key){
-    $obj=createModel('Config')->get($key)->get();
-    if($obj==null){
-        return false ;
-    }else{
-        if(count($obj)==0){
-            return false ;
-        }else{
+function C($key)
+{
+    $obj = createModel('Config')->get($key)->get();
+    if ($obj == null) {
+        return false;
+    } else {
+        if (count($obj) == 0) {
+            return false;
+        } else {
             return $obj['value'];
         }
     }
@@ -35,10 +36,8 @@ function C($key){
  * @param $prm
  * @param $filter
  */
-function I($prm,$filter){
-
-
-
+function I($prm, $filter)
+{
 
 
     return true;
@@ -48,12 +47,13 @@ function I($prm,$filter){
  * 直接通过表名字创建BaseModel
  * @param $table
  */
-function M($table_name,$db_key='master'){
-    $include=APPPATH."models/$table_name.php";
-    if(file_exists($include)){
-        require_once $include ;
-        $className='\\App\\Model\\'.$table_name;
-        if(class_exists($className)){
+function M($table_name, $db_key = 'master')
+{
+    $include = APPPATH . "models/$table_name.php";
+    if (file_exists($include)) {
+        require_once $include;
+        $className = '\\App\\Model\\' . $table_name;
+        if (class_exists($className)) {
             return new $className(Swoole::getInstance()->model->swoole, $db_key);
         }
     }
@@ -67,9 +67,10 @@ function M($table_name,$db_key='master'){
  * @param $url
  * @return string
  */
-function http_get($url){
-    $curl=new CURL();
-    $data=$curl->get($url);
+function http_get($url)
+{
+    $curl = new CURL();
+    $data = $curl->get($url);
     return $data;
 }
 
@@ -80,9 +81,10 @@ function http_get($url){
  * @param int $timeout
  * @return mixed
  */
-function http_post($url,$postForm, $ip = null, $timeout = 10){
-    $curl=new CURL() ;
-    $data=$curl->post($url, $postForm, $ip, $timeout );
+function http_post($url, $postForm, $ip = null, $timeout = 10)
+{
+    $curl = new CURL();
+    $data = $curl->post($url, $postForm, $ip, $timeout);
     return $data;
 }
 
@@ -90,10 +92,11 @@ function http_post($url,$postForm, $ip = null, $timeout = 10){
  * @param $func
  * @return swoole_process
  */
-function CreateProcess($func){
-    $process=new swoole_process($func);
+function CreateProcess($func)
+{
+    $process = new swoole_process($func);
     //启动检测进程
-    $process->start() ;
+    $process->start();
     return $process;
 }
 
@@ -101,14 +104,16 @@ function CreateProcess($func){
  * @param $arr
  * @return bool
  */
-function is_assoc($arr) {
+function is_assoc($arr)
+{
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
 /**
  * @param $value
  */
-function Dumps($value){
+function Dumps($value)
+{
     echo '<pre>';
     var_dump($value);
     echo '</pre>';
@@ -118,20 +123,56 @@ function Dumps($value){
  * @param $tagname
  * @param $html
  */
-function GetDomByTagname($tagname,$html){
-    preg_match_all("/<\s*".$tagname."\s+(([^><]+){1})?\s*>(.+)<\s*\/\s*".$tagname."\s*>/uU",$html,$match,PREG_SET_ORDER);
-    $count=0;
-    $result=[];
-    foreach($match as $item){
-        preg_match_all("/\w+=\s*[\"']\s*[\S _-]*\s*[\"']\s*/U",$item[1],$subMatch,PREG_SET_ORDER);
-        foreach($subMatch as $v){
-            $tmpStr=trim($v[0]);
-            $kv=explode("=",$tmpStr);
-            $result[$item[3]][]=[$kv[0]=>preg_replace('/[\'""]/',"",trim($kv[1]))];
+function GetDomByTagname($tagname, $html)
+{
+    preg_match_all("/<\s*" . $tagname . "\s+(([^><]+){1})?\s*>(.*)<\s*\/\s*" . $tagname . "\s*>/uU", $html, $match, PREG_SET_ORDER);
+    $count = 0;
+    $result = [];
+    foreach ($match as $item) {
+        preg_match_all("/\w+=\s*[\"']\s*[\S _-]*\s*[\"']\s*/U", $item[1], $subMatch, PREG_SET_ORDER);
+        foreach ($subMatch as $v) {
+            $tmpStr = trim($v[0]);
+            $kv = explode("=", $tmpStr);
+            $result[$item[3]][] = [$kv[0] => preg_replace('/[\'""]/', "", trim($kv[1]))];
         }
     }
     return $result;
 }
+
+
+
+/**key具有唯一性  根据micro second和key产生一个 近乎不重复的值
+ * @param $key
+ * @return string
+ */
+function GetUniqueString($key)
+{
+    return md5(uniqid($key . mt_rand(1, 1000000000) . time()));
+}
+
+//
+///**获取img src
+// * @param $html
+// * @param $func
+// */
+function GetImgSrc($html,$func){
+    //最小化匹配
+    $c1 = preg_match_all('/<\s*img\s.*?>/', $html, $m1);
+    for($i=0; $i<$c1; $i++) {
+        $c2 = preg_match_all('/(\w+)\s*=\s*(?:(?:(["\'])(.*?)(?=\2))|([^\/\s]*))/', $m1[0][$i], $m2);
+        for($j=0; $j<$c2; $j++) {
+            $src = !empty($m2[4][$j]) ? $m2[4][$j] : $m2[3][$j];
+            $func($src);
+        }
+    }
+}
+
+//$str="< img src='xxxx.jpg'/><img src='xxxx.jpg'/>";
+//GetImgSrc($str,function($src){
+//    echo $src;
+//});
+//
+
 
 
 ?>

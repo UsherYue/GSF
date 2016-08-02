@@ -99,10 +99,10 @@ class Model
 		$selectdb->select($this->select);
 		$selectdb->page_size=6;
 		//如果没有设置order 默认主键排序
-		if (!isset($params['order']))
-		{
-			$params['order'] = "`{$this->table}`.{$this->primary} desc";
-		}
+//		if (!isset($params['order']))
+//		{
+//			$params['order'] = "`{$this->table}`.{$this->primary} desc";
+//		}
 		$selectdb->put($params);
 
 		if (isset($params['page']))
