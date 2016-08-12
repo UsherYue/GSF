@@ -159,7 +159,7 @@ function GetImgSrc($html,$func){
     //最小化匹配
     $c1 = preg_match_all('/<\s*img\s.*?>/', $html, $m1);
     for($i=0; $i<$c1; $i++) {
-        $c2 = preg_match_all('/(\w+)\s*=\s*(?:(?:(["\'])(.*?)(?=\2))|([^\/\s]*))/', $m1[0][$i], $m2);
+        $c2 = preg_match_all('/(src)\s*=\s*(?:(?:(["\'])(.*?)(?=\2))|([^\/\s]*))/', $m1[0][$i], $m2);
         for($j=0; $j<$c2; $j++) {
             $src = !empty($m2[4][$j]) ? $m2[4][$j] : $m2[3][$j];
             $func($src);

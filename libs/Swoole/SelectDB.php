@@ -539,7 +539,7 @@ class SelectDB
         if ($sql == '')
         {
             $this->getsql(false);
-          //  echo $this->sql;
+           // echo $this->sql;
         }
         else
         {
@@ -823,7 +823,6 @@ class SelectDB
         else
         {
             $sql = "select count({$this->count_fields}) as c from {$this->table} {$this->join} {$this->where} {$this->union} {$this->group}";
-          //  echo $sql;
             $_c = $this->db->query($sql);
             if ($_c === false)
             {
@@ -863,7 +862,7 @@ class SelectDB
 
         $field = substr($field, 0, -1);
         $values = substr($values, 0, -1);
-  //  echo "insert into {$this->table} ($field) values($values)";
+ //  echo "insert into {$this->table} ($field) values($values)";
         return $this->db->query("insert into {$this->table} ($field) values($values)");
     }
 

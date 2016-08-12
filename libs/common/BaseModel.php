@@ -213,13 +213,67 @@ class BaseModel extends Swoole\Model
         $result = $selectdb->getall();
         return [
             'list' => $result,
-            'totle' => $pager->total,
-            'totlepage' => $pager->totalpage,
+            'total' => $pager->total,
+            'totalpage' => $pager->totalpage,
             'page' => $htmlOn ? $pager->render() : "",
             'pagesize' => $pager->pagesize,
             'current' => $pager->page
         ];
     }
+
+    /**内存分页
+     * @param $allCount
+     * @param $data
+     * @param $page
+     * @param $pagesize
+     * @return array
+     */
+     public  function  GetsMemPage($allCount,$data,$page,$pagesize){
+         if($allCount==0){
+             return [
+                 'total'=>0,
+                 'current'=>$page,
+                 'totalpage'=>0,
+                 'list'=>[]
+             ];
+         }elseif($allCount>0&&$allCount<=$pagesize){
+             //不够一页
+             if($page==1){
+                 return [
+                     'total'=>$allCount,
+                     'totalpage'=>1,
+                     'current'=>1,
+                     'list'=>$data
+                 ];
+             }
+             else{
+                 return [
+                     'total'=>$allCount,
+                     'totalpage'=>1,
+                     'current'=>$page,
+                     'list'=>[]
+                 ];
+             }
+         }elseif($allCount>$pagesize){
+             //大于1页
+             $totalPage=($allCount%$pagesize==0)?intval($allCount/$pagesize):intval($allCount/$pagesize)+1;
+             if($page>$totalPage){
+                 return [
+                     'total'=>$allCount,
+                     'totalpage'=>$totalPage,
+                     'current'=>$page,
+                     'list'=>[]
+                 ];
+             }else{
+                 return [
+                     'total'=>$allCount,
+                     'totalpage'=>$totalPage,
+                     'current'=>$page,
+                     'list'=>array_slice($data,($page-1)*$pagesize,$pagesize)
+                 ];
+             }
+         }
+     }
 
 
 }
