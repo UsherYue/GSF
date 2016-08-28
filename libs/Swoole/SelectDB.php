@@ -536,16 +536,16 @@ class SelectDB
      */
     function exeucte($sql = '')
     {
+
         if ($sql == '')
         {
             $this->getsql(false);
-           // echo $this->sql;
+         // echo $this->sql;
         }
         else
         {
             $this->sql = $sql;
         }
-
         $this->result = $this->db->query($this->sql);
         $this->is_execute++;
     }
@@ -589,8 +589,9 @@ class SelectDB
         if(isset($params['orwhere']))
         {
             $orwheres = $params['orwhere'];
-            if(is_array($orwheres)) foreach($orwheres as $orwhere) $this->orwhere($orwhere);
-            else $this->$orwheres($orwheres);
+            if(is_array($orwheres))
+                foreach($orwheres as $orwhere) $this->orwhere($orwhere);
+            else $this->orwhere($orwheres);
             unset($params['orwhere']);
         }
         //处理walk调用
@@ -725,10 +726,12 @@ class SelectDB
     {
         if ($this->is_execute == 0)
         {
+
             $this->exeucte();
         }
         if ($this->result)
         {
+
             return $this->result->fetchall();
         }
         else
@@ -743,10 +746,10 @@ class SelectDB
      */
     function getall()
     {
+
         //启用了Cache
         if ($this->enableCache)
         {
-
             $this->getsql(false);
             //指定Cache的Key
             if (empty($this->cacheOptions['key']))
@@ -780,10 +783,10 @@ class SelectDB
             }
 
             $data = $cacheObject->get($cache_key);
-
             //Cache数据为空，从DB中拉取
             if (empty($data))
             {
+
                 $data = $this->_execute();
                 $cacheObject->set($cache_key, $data, $cacheLifeTime);
                 return $data;

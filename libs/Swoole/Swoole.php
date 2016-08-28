@@ -521,7 +521,6 @@ class Swoole
         } else {
             $controller_path = self::$app_path . '/controllers/' . ucwords($mvc['controller']) . '.php';
         }
-
         if (class_exists($controller_class, false)) {
             goto do_action;
         } else {
@@ -558,6 +557,11 @@ class Swoole
         $xssFilterMethod = '__xssDo';
         $escapeFilterMethod = '__escapeDo';
         $controller->$beforeReqMethod();
+        //请求时间分析
+        //HTTP_RESPONSE_ANALYSIS    BeforeRequest
+        if(defined('HTTP_RESPONSE_ANALYSIS')){
+            $controller->_beforeRequestAnalysis($mvc);
+        }
         //控制器局部是否开启xss  默认关闭 可以开启
         $uses = class_uses($controller, true);
         if (in_array('App\Controller\XssClean', $uses)) {
@@ -582,6 +586,10 @@ class Swoole
             $this->http->header('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT');
             $this->http->header('Content-Type', 'application/json');
             $return = json_encode($return);
+        }
+        //HTTP_RESPONSE_ANALYSIS    AfterRequest
+        if(defined('HTTP_RESPONSE_ANALYSIS')){
+            $controller->_afterRequestAnalysis($mvc);
         }
         if (defined('SWOOLE_SERVER')) {
             return $return;
@@ -620,6 +628,7 @@ function swoole_urlrouter_rewrite(&$uri)
     }
     $match = array();
     $uri_for_regx = '/' . $uri;
+
     /////////////////
     foreach ($rewrite as $rule) {
 

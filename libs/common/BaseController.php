@@ -143,6 +143,24 @@ class BaseController extends Swoole\Controller
 
     }
 
+
+    /**在请求之前分析
+     * @param $uri
+     */
+    public  function  _beforeRequestAnalysis($uri){
+         echo  'before:'.time();
+         var_dump($uri);
+
+    }
+
+    /**在请求之后分析
+     * @param $uri
+     */
+    public  function  _afterRequestAnalysis($uri){
+        echo  'after:'.time();
+        var_dump($uri);
+    }
+
     /**在请求之后
      * @return bool
      */

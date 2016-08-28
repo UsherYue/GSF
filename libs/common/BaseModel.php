@@ -231,6 +231,7 @@ class BaseModel extends Swoole\Model
      public  function  GetsMemPage($allCount,$data,$page,$pagesize){
          if($allCount==0){
              return [
+                 'pagesize'=>$pagesize,
                  'total'=>0,
                  'current'=>$page,
                  'totalpage'=>0,
@@ -240,6 +241,7 @@ class BaseModel extends Swoole\Model
              //不够一页
              if($page==1){
                  return [
+                     'pagesize'=>$pagesize,
                      'total'=>$allCount,
                      'totalpage'=>1,
                      'current'=>1,
@@ -248,6 +250,7 @@ class BaseModel extends Swoole\Model
              }
              else{
                  return [
+                     'pagesize'=>$pagesize,
                      'total'=>$allCount,
                      'totalpage'=>1,
                      'current'=>$page,
@@ -259,6 +262,7 @@ class BaseModel extends Swoole\Model
              $totalPage=($allCount%$pagesize==0)?intval($allCount/$pagesize):intval($allCount/$pagesize)+1;
              if($page>$totalPage){
                  return [
+                     'pagesize'=>$pagesize,
                      'total'=>$allCount,
                      'totalpage'=>$totalPage,
                      'current'=>$page,
@@ -266,6 +270,7 @@ class BaseModel extends Swoole\Model
                  ];
              }else{
                  return [
+                     'pagesize'=>$pagesize,
                      'total'=>$allCount,
                      'totalpage'=>$totalPage,
                      'current'=>$page,
@@ -274,6 +279,27 @@ class BaseModel extends Swoole\Model
              }
          }
      }
+
+    /**替换 插入数据
+     * @param array $fields
+     * @param array $values
+     * @return bool|Swoole\Database\MySQLiRecord
+     */
+    public  function  ReplaceInto($fields=[],$values=[]){
+        if(is_string($fields)){
+            $fieldList="({$fields})";
+        }elseif(is_array($fields)){
+            $fieldList='('.implode(',',$fields).')';
+        }
+        if(is_string($values)){
+            $valueList="({$values})";
+        }elseif(is_array($values)){
+            $valueList='('.implode(',',$values).')';
+        }
+        $sql="replace into {$this->table} {$fieldList} VALUES {$valueList} ";
+        echo $sql;
+        return $this->db->query($sql);
+    }
 
 
 }
