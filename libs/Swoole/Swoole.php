@@ -395,6 +395,7 @@ class Swoole
                 break;
             }
         }
+        $mvc['uri']=$uri;
         return $mvc;
     }
 
@@ -492,9 +493,10 @@ class Swoole
     {
 
         $mvc = call_user_func($this->router_function);
+        //var_dump($mvc);
 //        echo '<pre>';
 //        var_dump($mvc);
-        //var_dump($this->router_function[0]->config->config['rewrite']);
+     //  var_dump($this->router_function[0]->config->config['rewrite']);
 //        echo '</pre>';
         if ($mvc === false) {
             $this->http->status(404);
@@ -678,6 +680,8 @@ function swoole_urlrouter_rewrite(&$uri)
 
                 }
             }
+            ##add
+            $rule['uri']=$uri_for_regx;
             return $rule['mvc'];
         }
     }
@@ -730,5 +734,7 @@ function swoole_urlrouter_mvc(&$uri)
         }
         $_REQUEST = array_merge($_REQUEST, $_GET);
     }
+    #add
+    $array['uri']=$uri;
     return $array;
 }

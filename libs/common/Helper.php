@@ -167,6 +167,13 @@ function GetImgSrc($html,$func){
     }
 }
 
+/**获取毫秒级时间戳
+ * @return float
+ */
+function getMillisecond() {
+    list($t1, $t2) = explode(' ', microtime());
+    return (float)sprintf('%.0d',(floatval($t1)+floatval($t2))*1000);
+}
 //$str="< img src='xxxx.jpg'/><img src='xxxx.jpg'/>";
 //GetImgSrc($str,function($src){
 //    echo $src;

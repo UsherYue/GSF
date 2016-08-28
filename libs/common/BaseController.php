@@ -68,6 +68,8 @@ trait HtmlEscape
 class BaseController extends Swoole\Controller
 {
 
+    //http 请求时间
+    private  $_beginTime=0;
     /**
      * xss
      */
@@ -147,18 +149,41 @@ class BaseController extends Swoole\Controller
     /**在请求之前分析
      * @param $uri
      */
-    public  function  _beforeRequestAnalysis($uri){
-         echo  'before:'.time();
-         var_dump($uri);
+    public  function  _beforeRequestAnalysis($mvc){
+        $this->_beginTime=getMillisecond();
 
     }
 
     /**在请求之后分析
      * @param $uri
      */
-    public  function  _afterRequestAnalysis($uri){
-        echo  'after:'.time();
-        var_dump($uri);
+    public  function  _afterRequestAnalysis($mvc){
+        //更新
+        $endTime=getMillisecond();
+        $execTime=$endTime-$this->_beginTime;
+        $result=M('we_http_response_time')->gets([
+            'controller'=>$mvc['controller'],
+            'view'=>$mvc['view'],
+            'uri'=>$mvc['uri']
+        ]);
+        if(empty($result)){
+            M('we_http_response_time')->put([
+                'controller'=>$mvc['controller'],
+                'view'=>$mvc['view'],
+                'uri'=>$mvc['uri'],
+                'time'=>$execTime
+            ]);
+            return ;
+        }
+        //执行时间大于前一次
+        if($execTime>$result[0]['time']){
+            M('we_http_response_time')->sets(['time'=>$execTime],[
+                'controller'=>$mvc['controller'],
+                'view'=>$mvc['view'],
+                'uri'=>$mvc['uri']
+            ]);
+        }
+
     }
 
     /**在请求之后
