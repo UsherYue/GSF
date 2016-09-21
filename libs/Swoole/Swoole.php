@@ -168,6 +168,7 @@ class Swoole
         Swoole\Loader::addNameSpace('App', self::$app_path . '/classes');
 
         $this->load = new Swoole\Loader($this);
+
         $this->model = new Swoole\ModelLoader($this);
         $this->config = new Swoole\Config;
         $this->config->setPath(self::$app_path . '/configs');
@@ -178,6 +179,7 @@ class Swoole
         $this->addHook(Swoole::HOOK_ROUTE, 'swoole_urlrouter_mvc');
         //设置路由函数
         $this->router(array($this, 'urlRoute'));
+
     }
 
     /**
@@ -311,7 +313,7 @@ class Swoole
      * @param $key
      * @return mixed
      */
-    protected function loadModule($module, $key = 'master')
+    public function loadModule($module, $key = 'master')
     {
         $object_id = $module . '_' . $key;
         if (empty($this->objects[$object_id])) {

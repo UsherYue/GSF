@@ -1,5 +1,6 @@
 <?php
 namespace Swoole;
+
 use Swoole;
 
 class Redis
@@ -15,38 +16,28 @@ class Redis
 
     static function getIncreaseId($appKey, $init_id = 1000)
     {
-        if (empty($appKey))
-        {
+        if (empty($appKey)) {
             return false;
         }
         $main_key = self::$prefix . $appKey;
         //已存在 就加1
-        if (\Swoole::$php->redis->exists($main_key))
-        {
+        if (\Swoole::$php->redis->exists($main_key)) {
             $inc = \Swoole::$php->redis->incr($main_key);
-            if (empty($inc))
-            {
-                \Swoole::$php->log->put("redis::incr() failed. Error: ".\Swoole::$php->redis->getLastError());
+            if (empty($inc)) {
+                \Swoole::$php->log->put("redis::incr() failed. Error: " . \Swoole::$php->redis->getLastError());
                 return false;
             }
             return $inc;
-        }
-        //上面的if条件返回false,可能是有错误，或者key不存在，这里要判断下
-        else if(\Swoole::$php->redis->getLastError())
-        {
+        } //上面的if条件返回false,可能是有错误，或者key不存在，这里要判断下
+        else if (\Swoole::$php->redis->getLastError()) {
             return false;
-        }
-        //这才是说明key不存在，需要初始化
-        else
-        {
+        } //这才是说明key不存在，需要初始化
+        else {
             $init = \Swoole::$php->redis->set($main_key, $init_id);
-            if ($init == false)
-            {
-                \Swoole::$php->log->put("redis::set() failed. Error: ".\Swoole::$php->redis->getLastError());
+            if ($init == false) {
+                \Swoole::$php->log->put("redis::set() failed. Error: " . \Swoole::$php->redis->getLastError());
                 return false;
-            }
-            else
-            {
+            } else {
                 return $init_id;
             }
         }
@@ -58,61 +49,69 @@ class Redis
         $this->connect();
     }
 
+    /**测试网络链接
+     * @return bool
+     */
+    function isConnect()
+    {
+        try {
+            return ($this->_redis->ping() == '+PONG');
+        } catch (\RedisException $ex) {
+            return false;
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    function  close()
+    {
+        return $this->_redis->close();
+    }
+
     function connect()
     {
-        try
-        {
-            if ($this->_redis)
-            {
+        //增加初始化标识
+        $bSuccess = false;
+        try {
+            if ($this->_redis) {
                 unset($this->_redis);
             }
             $this->_redis = new \Redis();
-            if ($this->config['pconnect'])
-            {
-                $this->_redis->pconnect($this->config['host'], $this->config['port'], $this->config['timeout']);
+            if ($this->config['pconnect']) {
+                $bSuccess = $this->_redis->pconnect($this->config['host'], $this->config['port'], $this->config['timeout']);
+            } else {
+                $bSuccess = $this->_redis->connect($this->config['host'], $this->config['port'], $this->config['timeout']);
             }
-            else
-            {
-                $this->_redis->connect($this->config['host'], $this->config['port'], $this->config['timeout']);
+
+            if (!empty($this->config['password'])) {
+                $bSuccess &= $this->_redis->auth($this->config['password']);
             }
-            
-            if (!empty($this->config['password']))
-            {
-                $this->_redis->auth($this->config['password']);
+            if (!empty($this->config['database'])) {
+                $bSuccess &= $this->_redis->select($this->config['database']);
             }
-            if (!empty($this->config['database']))
-            {
-                $this->_redis->select($this->config['database']);
-            }
-        }
-        catch (\RedisException $e)
-        {
+        } catch (\RedisException $e) {
             \Swoole::$php->log->error(__CLASS__ . " Swoole Redis Exception" . var_export($e, 1));
             return false;
         }
+        return $bSuccess;
     }
 
     function __call($method, $args = array())
     {
         $reConnect = false;
-        while (1)
-        {
-            try
-            {
+        while (1) {
+            try {
                 $result = call_user_func_array(array($this->_redis, $method), $args);
-            }
-            catch (\RedisException $e)
-            {
+            } catch (\RedisException $e) {
                 //已重连过，仍然报错
-                if ($reConnect)
-                {
+                if ($reConnect) {
                     throw $e;
                 }
 
                 \Swoole::$php->log->error(__CLASS__ . " [" . posix_getpid() . "] Swoole Redis[{$this->config['host']}:{$this->config['port']}]
                  Exception(Msg=" . $e->getMessage() . ", Code=" . $e->getCode() . "), Redis->{$method}, Params=" . var_export($args, 1));
-                if ($this->_redis->isConnected())
-                {
+                if ($this->_redis->isConnected()) {
                     $this->_redis->close();
                 }
                 $this->connect();
@@ -128,19 +127,14 @@ class Redis
     static function write($fp, $content)
     {
         $length = strlen($content);
-        for ($written = 0; $written < $length; $written += $n)
-        {
-            if ($length - $written >= 8192)
-            {
+        for ($written = 0; $written < $length; $written += $n) {
+            if ($length - $written >= 8192) {
                 $n = fwrite($fp, substr($content, 8192));
-            }
-            else
-            {
+            } else {
                 $n = fwrite($fp, substr($content, $written));
             }
             //写文件失败了
-            if (empty($n))
-            {
+            if (empty($n)) {
                 break;
             }
         }
@@ -156,20 +150,17 @@ class Redis
     static function syncFromAof($file, $dstRedisServer, $seek = 0)
     {
         $fp = fopen($file, 'r');
-        if (!$fp)
-        {
+        if (!$fp) {
             return false;
         }
         //偏移
-        if ($seek > 0)
-        {
+        if ($seek > 0) {
             fseek($fp, $seek);
         }
 
         //目标Redis服务器
         $dstRedis = stream_socket_client($dstRedisServer, $errno, $errstr, 10);
-        if (!$dstRedis)
-        {
+        if (!$dstRedis) {
             return false;
         }
 
@@ -180,40 +171,31 @@ class Redis
         $patten = "#^\\*(\d+)\r\n$#";
 
         readfile:
-        while(!feof($fp))
-        {
+        while (!feof($fp)) {
             $line = fgets($fp, 8192);
-            if ($line === false)
-            {
+            if ($line === false) {
                 echo "line empty\n";
                 break;
             }
             $n_lines++;
             $r = preg_match($patten, $line);
-            if ($r)
-            {
-                if ($_send)
-                {
-                    if (self::write($dstRedis, $_send) === false)
-                    {
+            if ($r) {
+                if ($_send) {
+                    if (self::write($dstRedis, $_send) === false) {
                         die("写入Redis失败. $_send");
                     }
                     $n_bytes += strlen($_send);
                     //清理数据
-                    if (fread($dstRedis, 8192) == false)
-                    {
+                    if (fread($dstRedis, 8192) == false) {
                         echo "读取Redis失败. $_send\n";
-                        for($i = 0; $i < 10; $i++)
-                        {
+                        for ($i = 0; $i < 10; $i++) {
                             $dstRedis = stream_socket_client($dstRedisServer, $errno, $errstr, 10);
-                            if (!$dstRedis)
-                            {
+                            if (!$dstRedis) {
                                 echo "连接到Redis($dstRedisServer)失败, 1秒后重试.\n";
                                 sleep(1);
                             }
                         }
-                        if (!$dstRedis)
-                        {
+                        if (!$dstRedis) {
                             echo "连接到Redis($dstRedisServer)失败\n";
                             return false;
                         }
@@ -221,17 +203,14 @@ class Redis
                         continue;
                     }
 
-                    $n_success ++;
-                    if ($n_success % 10000 == 0)
-                    {
+                    $n_success++;
+                    if ($n_success % 10000 == 0) {
                         $seek = ftell($fp);
                         echo "KEY: $n_success, LINE: $n_lines, BYTE: {$n_bytes}, SEEK: {$seek}. 完成\n";
                     }
                 }
                 $_send = $line;
-            }
-            else
-            {
+            } else {
                 $_send .= $line;
             }
         }
@@ -244,12 +223,10 @@ class Redis
         //关闭文件
         fclose($fp);
         $fp = fopen($file, 'r');
-        if (!$fp)
-        {
+        if (!$fp) {
             exit("打开文件失败，seek=$seek\n");
         }
-        if (fseek($fp, $seek) < 0)
-        {
+        if (fseek($fp, $seek) < 0) {
             exit("feek($seek)失败\n");
         }
         goto readfile;

@@ -86,7 +86,7 @@ class FileLog extends \Swoole\Log implements \Swoole\IFace\Log
             return false;
         }
         $level_str = self::$level_str[$level];
-
+        date_default_timezone_set("Asia/Shanghai");
         $now = new \DateTime('now');
         $date = $now->format('Ymd');
         $log = $now->format(self::$date_format)."\t{$level_str}\t{$msg}";

@@ -12,58 +12,26 @@
 /**任务队列
  * Class TaskQueue
  */
-class TaskQueue
+abstract class TaskQueue
 {
-    private $queueName='';
     /**
      * @param $queueName
      */
-    function  TaskQueue($queueName){
-        $this->queueName=$queueName;
-    }
+    function  TaskQueue(){}
 
-    /**task callback
+    /**task async callback
      * @param $v
      */
-    function  TaskCallback($v){
-
-    }
+    abstract  function  AsyncTaskCallback($v);
 
     /**
-     * @param $k
-     * @param $v
+     * @param $task
+     * @return mixed
      */
-    function LPush($v){
+    abstract  function  PushTask($task);
 
-    }
-
-
-    /**
-     * @param $k
+    /**清除task
+     * @return mixed
      */
-    function LPop(){
-
-    }
-
-    /**
-     * @param $k
-     * @param $v
-     */
-    function RPush($v){
-
-    }
-
-    /**
-     * @param $k
-     */
-    function RPop(){
-
-    }
-
-    /**clear queue
-     * @param $k
-     */
-    function Clear(){
-
-    }
+    abstract  function Clear();
 }

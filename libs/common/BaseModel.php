@@ -221,6 +221,16 @@ class BaseModel extends Swoole\Model
         ];
     }
 
+    /**
+     *
+     * @param $params
+     */
+    public  function  GetOne($params){
+        $params['limit']=1;
+        $result=$this->gets($params);
+        return empty($result)?[]:$result[0];
+    }
+
     /**内存分页
      * @param $allCount
      * @param $data
@@ -297,7 +307,6 @@ class BaseModel extends Swoole\Model
             $valueList='('.implode(',',$values).')';
         }
         $sql="replace into {$this->table} {$fieldList} VALUES {$valueList} ";
-        echo $sql;
         return $this->db->query($sql);
     }
 

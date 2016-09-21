@@ -164,6 +164,7 @@ function commonLoader($dir)
         }
     }
 };
+
 function doLoader($pathtree){
     foreach($pathtree as $k=>$v){
         if(is_string($v)){
@@ -176,12 +177,14 @@ function doLoader($pathtree){
 // laod mvc ext
 if(defined('MVCAPP')){
     $loader=array_merge_recursive(
+        commonLoader(WEBPATH."/apps/configs"),
         commonLoader(WEBPATH."/libs/common"),
         commonLoader(WEBPATH."/apps/common"),
         commonLoader(WEBPATH."/apps/tasks")
     );
     doLoader($loader);
 }
+
 
 //在路由之前增加钩子 用于进行安全认证 xss  过滤 等等
 //用于全局路由之前
