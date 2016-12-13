@@ -8,46 +8,14 @@
  * 心怀教育梦－烟台网格软件技术有限公司
  */
 
-/**缓存服务
- * Class Cache
- * global $php;
- * global $redis;
- * $php->loadModule('redis');
- * $redis->isConnect();
- * $redis->isConnect();
- * $redis->isConnect();
- * $redis->isConnect();
- * $redis->close();
- * $redis->isConnect();
- * $redis->isConnect();
- * $redis->connect();
- * $redis->isConnect();
- * $redis->isConnect();
- * die(1);
- *
- * global $php;
- * global $redis;
- * $php->loadModule('redis');
- * Cache::SetCache('sss',11111);
- * var_dump($redis->isConnect());
- * var_dump(Cache::GetCache('sss'));
- * $redis->close();
- * var_dump(Cache::IsConnect());
- * var_dump(Cache::GetCache('sss'));
- * var_dump(Cache::IsConnect());
- *
- * global $php;
- * global $redis;
- * $php->loadModule('redis');
- * Cache::LPush('a',1);
- * Cache::Close();
- * var_dump(Cache::IsConnect());
- * var_dump(Cache::LPop('a'));
- * var_dump(Cache::IsConnect());
+
+/**mutex
+ * @var null
  */
+//全局锁
 class Cache
 {
-
+     public  static  $RedisconnectMutex=null;
     /**
      * @return bool
      */
@@ -93,12 +61,12 @@ class Cache
         $result = Swoole::getInstance()->redis->get($key);
         if (!$result) {
             //断线重连
-            //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $result = Swoole::getInstance()->redis->get($key);
+            //try lock
+            if(Cache::$RedisconnectMutex->trylock()){
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $result = Swoole::getInstance()->redis->get($key);
+            }
         }
         return json_decode($result, true);
     }
@@ -112,12 +80,12 @@ class Cache
         $result = Swoole::getInstance()->redis->get($key);
         if (!$result) {
             //断线重连
-            //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $result = Swoole::getInstance()->redis->get($key);
+            //try lock
+            if(Cache::$RedisconnectMutex->trylock()){
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $result = Swoole::getInstance()->redis->get($key);
+            }
         }
         return $result;
     }
@@ -130,12 +98,12 @@ class Cache
         $bExists = Swoole::getInstance()->redis->exists($key);
         if (!$bExists) {
             //断线重连
-            //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $bExists = Swoole::getInstance()->redis->exists($key);
+            //try lock
+            if(Cache::$RedisconnectMutex->trylock()){
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $bExists = Swoole::getInstance()->redis->exists($key);
+            }
         }
         return $bExists;
     }
@@ -153,13 +121,13 @@ class Cache
             && Swoole::getInstance()->redis->expire($key, $lifttime);
         if (!$bSuccess) {
             //断线重连
-            //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $bSuccess = Swoole::getInstance()->redis->set($key, json_encode($data))
-                && Swoole::getInstance()->redis->expire($key, $lifttime);
+            //try lock
+            if(Cache::$RedisconnectMutex->trylock()) {
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $bSuccess = Swoole::getInstance()->redis->set($key, json_encode($data))
+                    && Swoole::getInstance()->redis->expire($key, $lifttime);
+            }
         }
         return $bSuccess;
     }
@@ -173,12 +141,11 @@ class Cache
         $result = Swoole::getInstance()->redis->del($key);
         if (!$result) {
             //断线重连
-            //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $result = Swoole::getInstance()->redis->del($key);
+            if(Cache::$RedisconnectMutex->trylock()) {
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $result = Swoole::getInstance()->redis->del($key);
+            }
         }
         return $result;
     }
@@ -193,11 +160,11 @@ class Cache
         if (!$result) {
             //断线重连
             //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $result = Swoole::getInstance()->redis->rPush($key, $val);
+            if(Cache::$RedisconnectMutex->trylock()) {
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $result = Swoole::getInstance()->redis->rPush($key, $val);
+            }
         }
         return $result;
     }
@@ -211,12 +178,11 @@ class Cache
         $result = Swoole::getInstance()->redis->rPop($key);
         if (!$result) {
             //断线重连
-            //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $result = Swoole::getInstance()->redis->rPop($key);
+            if(Cache::$RedisconnectMutex->trylock()) {
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $result = Swoole::getInstance()->redis->rPop($key);
+            }
         }
         return $result;
     }
@@ -230,12 +196,11 @@ class Cache
         $result = Swoole::getInstance()->redis->lPop($key);
         if (!$result) {
             //断线重连
-            //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $result = Swoole::getInstance()->redis->lPop($key);
+            if(Cache::$RedisconnectMutex->trylock()) {
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $result = Swoole::getInstance()->redis->lPop($key);
+            }
         }
         return $result;
     }
@@ -250,13 +215,14 @@ class Cache
         if (!$result) {
             //断线重连
             //lock
-            $lock = new swoole_lock(SWOOLE_MUTEX);
-            $lock->lock();
-            (!Cache::IsConnect()) && Cache::Connect();
-            $lock->unlock();
-            $result = Swoole::getInstance()->redis->lPush($key, $val);
+            if(Cache::$RedisconnectMutex->trylock()) {
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $result = Swoole::getInstance()->redis->lPush($key, $val);
+           }
         }
         return $result;
     }
-
 }
+//设置mutex
+Cache::$RedisconnectMutex=new swoole_lock(SWOOLE_MUTEX);

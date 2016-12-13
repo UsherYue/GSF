@@ -45,16 +45,20 @@ class Model
      * @param \Swoole $swoole
      * @param string $db_key 选择哪个数据库
      */
-    function __construct(\Swoole $swoole, $db_key = 'master')
+    function __construct(\Swoole $swoole, $db_key = '')
     {
-        $this->db = $swoole->db($db_key);
+        if(empty($db_key)){
+            global $php;
+            $this->db = $php->db;
+        }else{
+            $this->db = $swoole->db($db_key);
+        }
         $this->dbs = new SelectDB($this->db);
         $this->swoole = $swoole;
     }
 
     /**
      * 按ID切分表
-     *
      * @param $id
      * @return null
      */

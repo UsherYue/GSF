@@ -38,7 +38,7 @@ class BaseModel extends Swoole\Model
      * @param Swoole $swoole
      * @param string $db_key
      */
-    function __construct(\Swoole $swoole, $db_key = 'master')
+    function __construct(\Swoole $swoole, $db_key = '')
     {
         $this->sqlBuilder = new SqlBuilder();
         parent::__construct($swoole, $db_key);
@@ -187,13 +187,14 @@ class BaseModel extends Swoole\Model
      * @return array|bool
      * @throws \Exception
      */
-    public function GetsPage($params, $pageSize = 1, $pageNo = 1, $htmlOn = true, $count_fields = "*")
+    public function GetsPage($params, $pageSize = 1, $pageNo = 1,  $count_fields = "1",$htmlOn = true)
     {
         if (empty($params)) {
             throw new \Exception("no params.");
         }
         $pager = null;
         $params['page'] = $pageNo;
+        //$params['cache']=['object_id'=>'master'];
         $selectdb = new SelectDB($this->db);
         $selectdb->from($this->table);
         $selectdb->count_fields = $count_fields;
@@ -216,6 +217,42 @@ class BaseModel extends Swoole\Model
             'total' => $pager->total,
             'totalpage' => $pager->totalpage,
             'page' => $htmlOn ? $pager->render() : "",
+            'pagesize' => $pager->pagesize,
+            'current' => $pager->page
+        ];
+    }
+
+    /**
+     * @param $params
+     * @param int $pageSize
+     * @param int $pageNo
+     * @return array
+     * @throws \Exception
+     */
+    public function GetsPageWithoutCount($params, $pageSize = 1, $pageNo = 1)
+    {
+        if (empty($params)) {
+            throw new \Exception("no params.");
+        }
+        $pager = null;
+        $params['page'] = $pageNo;
+        //$params['cache']=['object_id'=>'master'];
+        $selectdb = new SelectDB($this->db);
+        $selectdb->from($this->table);
+        $selectdb->count_fields = false;
+        $selectdb->primary = $this->primary;
+        $selectdb->select($this->select);
+        $selectdb->page_size = $pageSize;
+        $selectdb->put($params);
+        if (isset($params['page'])) {
+            $selectdb->paging();
+            $pager = $selectdb->pager;
+        }
+        $result = $selectdb->getall();
+        return [
+            'list' => $result,
+            'total' => $pager->total,
+            'totalpage' => $pager->totalpage,
             'pagesize' => $pager->pagesize,
             'current' => $pager->page
         ];
@@ -307,6 +344,43 @@ class BaseModel extends Swoole\Model
             $valueList='('.implode(',',$values).')';
         }
         $sql="replace into {$this->table} {$fieldList} VALUES {$valueList} ";
+        //echo $sql;
+        return $this->db->query($sql);
+    }
+
+    /**替换 插入数据
+     * @param array $fields
+     * @param array $values
+     * @return bool|Swoole\Database\MySQLiRecord
+     */
+    public  function  ReplaceIntoCombine($fields=[],$values=[]){
+        if (is_string($fields)) {
+            $fieldList = "({$fields})";
+        } elseif (is_array($fields)) {
+            foreach ($fields as &$field) {
+                $field = "`$field`";
+            }
+            $fieldList = '(' . implode(',', $fields) . ')';
+        }
+        if (is_string($values)) {
+            $valueList = "({$values})";
+        } elseif (is_array($values)) {
+            foreach ($values as &$value) {
+                $value = "'$value'";
+            }
+            $valueList = '(' . implode(',', $values) . ')';
+        }
+        if (count($fields) > 1 && count($values) > 1) {
+            for ($i = 1; $i < count($fields); $i++) {
+                if (!empty($values[$i])) {
+                    $updates[] = "{$fields[$i]}={$values[$i]}";
+                }
+            }
+        }
+        $sql = "insert into {$this->table} {$fieldList} VALUES {$valueList} ";
+        if (!empty($updates)) {
+            $sql .= "   ON DUPLICATE KEY UPDATE " . implode(",", $updates);
+        }
         return $this->db->query($sql);
     }
 

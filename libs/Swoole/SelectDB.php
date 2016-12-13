@@ -536,14 +536,11 @@ class SelectDB
      */
     function exeucte($sql = '')
     {
-
         if ($sql == '')
         {
             $this->getsql(false);
-         // echo $this->sql;
         }
-        else
-        {
+        else {
             $this->sql = $sql;
         }
         $this->result = $this->db->query($this->sql);
@@ -611,7 +608,6 @@ class SelectDB
             }
             unset($params['walk']);
         }
-
         //处理其他参数
         foreach ($params as $key => $value)
         {
@@ -731,7 +727,6 @@ class SelectDB
         }
         if ($this->result)
         {
-
             return $this->result->fetchall();
         }
         else
@@ -761,7 +756,7 @@ class SelectDB
                 $cache_key = $this->cacheOptions['key'];
             }
             //指定使用哪个Cache实例
-            if (empty($this->cacheOptions['object_id']))
+            if (empty($this->cacheOptions['']))
             {
 
                 $cacheObject = \Swoole::$php->cache;
@@ -786,14 +781,12 @@ class SelectDB
             //Cache数据为空，从DB中拉取
             if (empty($data))
             {
-
                 $data = $this->_execute();
                 $cacheObject->set($cache_key, $data, $cacheLifeTime);
                 return $data;
             }
             else
             {
-               // var_dump($data);
                 return $data;
             }
         }
@@ -809,7 +802,9 @@ class SelectDB
      */
     public function count()
     {
-
+        if(false===$this->count_fields){
+            return 10000;
+        }
         if ($this->if_union)
         {
             //修改union 分页bug
@@ -855,17 +850,14 @@ class SelectDB
     {
         $field = "";
         $values = "";
-
         foreach($data as $key => $value)
         {
             $value = $this->db->quote($value);
             $field = $field . "`$key`,";
             $values = $values . "'$value',";
         }
-
         $field = substr($field, 0, -1);
         $values = substr($values, 0, -1);
- //  echo "insert into {$this->table} ($field) values($values)";
         return $this->db->query("insert into {$this->table} ($field) values($values)");
     }
 

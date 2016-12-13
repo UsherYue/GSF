@@ -31,8 +31,9 @@ define('APPPATH',WEBPATH . '/apps/');
 require WEBPATH . '/libs/lib_config.php';
 //全局配置
 require __DIR__ . '/apps/configs/global.php';
+
 //关闭debug
-Config::$debug = false;
+Config::$debug = true;
 //设置PID文件的存储路径
 Server::setPidFile(__DIR__ . '/logs/http_server.pid');
 /**
@@ -51,6 +52,7 @@ Server::start(function(){
     //启动任务
     //$Task=Task::StartTask();
     //启动服务
+
     $server->run(array('worker_num' =>1, 'react_num'=>2, 'max_request' => 500000, 'log_file' => LOGFILE));
 });
 

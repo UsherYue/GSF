@@ -168,12 +168,13 @@ function commonLoader($dir)
 function doLoader($pathtree){
     foreach($pathtree as $k=>$v){
         if(is_string($v)){
-            require_once($v);
+           strstr($v,"php")&&require_once($v);
         }else if(is_array($v)){
             doLoader($v);
         }
     }
 }
+
 // laod mvc ext
 if(defined('MVCAPP')){
     $loader=array_merge_recursive(

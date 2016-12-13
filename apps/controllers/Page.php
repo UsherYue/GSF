@@ -8,13 +8,21 @@
  * 心怀教育梦－烟台网格软件技术有限公司
  */
 namespace App\Controller ;
-class Page extends  BaseController{
 
-     function  index(){
-        echo $this->Get('b');
-         echo $this->Get('id');
+class Page extends BaseController
+{
 
-     }
+
+    function index()
+    {
+        echo "<pre>";
+
+        $m = M('Page');
+        $f = new \ReflectionClass($m);
+        echo $f->getName();
+        echo "</pre>";
+    }
+
 
 
 }

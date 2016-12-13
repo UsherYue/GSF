@@ -146,7 +146,6 @@ class Database
             echo "$sql<br />\n<hr />";
         }
         $this->read_times += 1;
-
         return $this->_db->query($sql);
     }
 

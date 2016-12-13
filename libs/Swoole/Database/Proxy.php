@@ -31,8 +31,7 @@ class Proxy
 
     function __construct($config)
     {
-        if (empty($config['slaves']))
-        {
+        if (empty($config['slaves'])) {
             throw new LocalProxyException("require slaves options.");
         }
         $this->config = $config;
@@ -40,16 +39,13 @@ class Proxy
 
     protected function getDB($type = self::DB_SLAVE)
     {
-        if ($this->forceMaster)
-        {
+        //强制发送主库
+        if ($this->forceMaster) {
             goto master;
         }
-
         //只读的语句
-        if ($type == self::DB_SLAVE)
-        {
-            if (empty($this->slaveDB))
-            {
+        if ($type == self::DB_SLAVE) {
+            if (empty($this->slaveDB)) {
                 //连接到从库
                 $config = $this->config;
                 //从从库中随机选取一个
@@ -58,34 +54,52 @@ class Proxy
                 $config['host'] = $server['host'];
                 $config['port'] = $server['port'];
                 $this->slaveDB = $this->connect($config);
+                //从库检查
+                $this->checkConnecting(self::DB_SLAVE);
             }
             return $this->slaveDB;
-        }
-        else
-        {
+        } else {
             master:
-            if (empty($this->masterDB))
-            {
+            if (empty($this->masterDB)) {
                 //连接到主库
                 $config = $this->config;
                 unset($config['slaves'], $config['use_proxy']);
                 $this->masterDB = $this->connect($config);
+                //主库检查
+                $this->checkConnecting(self::DB_MASTER);
             }
             return $this->masterDB;
         }
+    }
+
+    /**读写分离链接检查
+     * @param int $type
+     */
+    protected function  checkConnecting($type = self::DB_MASTER)
+    {
+        CreateProcess(function (\swoole_process $worder) use ($type) {
+            swoole_timer_tick(2000, function () use ($type) {
+                switch ($type) {
+                    case self::DB_MASTER: {
+                        !empty($this->masterDB) && $this->masterDB->check_status();
+                    }
+                    case self::DB_SLAVE: {
+                        !empty($this->slaveDB) && $this->slaveDB->check_status();
+                    }
+                }
+            });
+        });
     }
 
     function query($sql)
     {
         $command = substr($sql, 0, 6);
         //只读的语句
-        if (strcasecmp($command, 'select') === 0)
-        {
+        if (strcasecmp($command, 'select') === 0) {
             $db = $this->getDB(self::DB_SLAVE);
-        }
-        else
-        {
-            $this->forceMaster = true;
+        } else {
+            //删除强制发送主库的查询
+            //$this->forceMaster = true;
             $db = $this->getDB(self::DB_MASTER);
         }
         return $db->query($sql);

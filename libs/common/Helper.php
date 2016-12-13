@@ -47,7 +47,7 @@ function I($prm, $filter)
  * 直接通过表名字创建BaseModel
  * @param $table
  */
-function M($table_name, $db_key = 'master')
+function M($table_name, $db_key = '')
 {
     $include = APPPATH . "models/$table_name.php";
     if (file_exists($include)) {
@@ -72,6 +72,15 @@ function http_get($url)
     $curl = new CURL();
     $data = $curl->get($url);
     return $data;
+}
+
+/**删除数组
+ * @param $arr
+ * @param $offset
+ */
+function array_remove(&$arr, $offset)
+{
+    array_splice($arr, $offset, 1);
 }
 
 /**发送post请求
