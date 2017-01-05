@@ -32,7 +32,7 @@ class MsgQ implements \Swoole\IFace\Queue
 
     function pop()
     {
-        $ret = msg_receive($this->msg, 0, $this->msgtype, 65525, $data);
+        $ret = msg_receive($this->msg, 0, $this->msgtype, 1024*1024*10, $data);
         if ($ret)
         {
             return $data;
@@ -42,6 +42,7 @@ class MsgQ implements \Swoole\IFace\Queue
 
     function push($data)
     {
-        return msg_send($this->msg, $this->msgtype, $data);
+        $ret=msg_send($this->msg, $this->msgtype, $data);
+        return $ret;
     }
 }

@@ -7,9 +7,7 @@
  * Time: 下午5:27
  * 心怀教育梦－烟台网格软件技术有限公司
  */
-/*
- * 获取配置
- */
+
 use App\Model;
 use App\Model\BaseModel;
 use Swoole\Client\CURL;
@@ -35,17 +33,17 @@ function C($key)
 /**获取post.x  get.x  提供一个filter函数可以用来过滤数据
  * @param $prm
  * @param $filter
+ * @return bool
  */
 function I($prm, $filter)
 {
-
-
     return true;
 }
 
 /**
- * 直接通过表名字创建BaseModel
- * @param $table
+ * @param $table_name
+ * @param string $db_key
+ * @return BaseModel
  */
 function M($table_name, $db_key = '')
 {
@@ -54,11 +52,11 @@ function M($table_name, $db_key = '')
         require_once $include;
         $className = '\\App\\Model\\' . $table_name;
         if (class_exists($className)) {
-            return new $className(Swoole::getInstance()->model->swoole, $db_key);
+            return new $className(Swoole::getInstance(), $db_key);
         }
     }
     //load virtual
-    $virtualModel = new BaseModel(Swoole::getInstance()->model->swoole, $db_key);
+    $virtualModel = new BaseModel(Swoole::getInstance(), $db_key);
     $virtualModel->table = $table_name;
     return $virtualModel;
 }
@@ -131,8 +129,9 @@ function Dumps($value)
 /**从html文本中提取元素
  * @param $tagname
  * @param $html
+ * @return array
  */
-function GetDomByTagname($tagname, $html)
+function getDomByTagname($tagname, $html)
 {
     preg_match_all("/<\s*" . $tagname . "\s+(([^><]+){1})?\s*>(.*)<\s*\/\s*" . $tagname . "\s*>/uU", $html, $match, PREG_SET_ORDER);
     $count = 0;
@@ -148,28 +147,26 @@ function GetDomByTagname($tagname, $html)
     return $result;
 }
 
-
-
 /**key具有唯一性  根据micro second和key产生一个 近乎不重复的值
  * @param $key
  * @return string
  */
-function GetUniqueString($key)
+function getUniqueString($key)
 {
     return md5(uniqid($key . mt_rand(1, 1000000000) . time()));
 }
 
-//
-///**获取img src
-// * @param $html
-// * @param $func
-// */
-function GetImgSrc($html,$func){
+/**获取img src
+ * @param $html
+ * @param $func
+ */
+function getImgSrc($html, $func)
+{
     //最小化匹配
     $c1 = preg_match_all('/<\s*img\s.*?>/', $html, $m1);
-    for($i=0; $i<$c1; $i++) {
+    for ($i = 0; $i < $c1; $i++) {
         $c2 = preg_match_all('/(src)\s*=\s*(?:(?:(["\'])(.*?)(?=\2))|([^\/\s]*))/', $m1[0][$i], $m2);
-        for($j=0; $j<$c2; $j++) {
+        for ($j = 0; $j < $c2; $j++) {
             $src = !empty($m2[4][$j]) ? $m2[4][$j] : $m2[3][$j];
             $func($src);
         }
@@ -179,16 +176,82 @@ function GetImgSrc($html,$func){
 /**获取毫秒级时间戳
  * @return float
  */
-function getMillisecond() {
+function getMillisecond()
+{
     list($t1, $t2) = explode(' ', microtime());
-    return (float)sprintf('%.0d',(floatval($t1)+floatval($t2))*1000);
+    return (float)sprintf('%.0d', (floatval($t1) + floatval($t2)) * 1000);
 }
-//$str="< img src='xxxx.jpg'/><img src='xxxx.jpg'/>";
-//GetImgSrc($str,function($src){
-//    echo $src;
-//});
-//
 
+/**
+ * @param string $db_key
+ * @return \Swoole\Client\CoMySQL
+ */
+function CoM($db_key = 'master')
+{
+    return new \Swoole\Client\CoMySQL($db_key);
+}
+
+
+
+
+/**内存分页
+ * @param $allCount
+ * @param $data
+ * @param $page
+ * @param $pagesize
+ * @return array
+ */
+function  getsMemPage($allCount, $data, $page, $pagesize)
+{
+    if ($allCount == 0) {
+        return [
+            'pagesize' => $pagesize,
+            'total' => 0,
+            'current' => $page,
+            'totalpage' => 0,
+            'list' => []
+        ];
+    } elseif ($allCount > 0 && $allCount <= $pagesize) {
+        //不够一页
+        if ($page == 1) {
+            return [
+                'pagesize' => $pagesize,
+                'total' => $allCount,
+                'totalpage' => 1,
+                'current' => 1,
+                'list' => $data
+            ];
+        } else {
+            return [
+                'pagesize' => $pagesize,
+                'total' => $allCount,
+                'totalpage' => 1,
+                'current' => $page,
+                'list' => []
+            ];
+        }
+    } elseif ($allCount > $pagesize) {
+        //大于1页
+        $totalPage = ($allCount % $pagesize == 0) ? intval($allCount / $pagesize) : intval($allCount / $pagesize) + 1;
+        if ($page > $totalPage) {
+            return [
+                'pagesize' => $pagesize,
+                'total' => $allCount,
+                'totalpage' => $totalPage,
+                'current' => $page,
+                'list' => []
+            ];
+        } else {
+            return [
+                'pagesize' => $pagesize,
+                'total' => $allCount,
+                'totalpage' => $totalPage,
+                'current' => $page,
+                'list' => array_slice($data, ($page - 1) * $pagesize, $pagesize)
+            ];
+        }
+    }
+}
 
 
 ?>

@@ -181,7 +181,7 @@ if(defined('MVCAPP')){
         commonLoader(WEBPATH."/apps/configs"),
         commonLoader(WEBPATH."/libs/common"),
         commonLoader(WEBPATH."/apps/common"),
-        commonLoader(WEBPATH."/apps/tasks")
+        commonLoader(WEBPATH."/apps/task")
     );
     doLoader($loader);
 }

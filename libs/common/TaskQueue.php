@@ -4,34 +4,54 @@
  * 12XueSocietyService
  * TaskQueue.php Created by usher.yue.
  * User: usher.yue
- * Date: 16/8/28
- * Time: 下午3:59
+ * Date: 17/1/4
+ * Time: 21:31
  * 心怀教育梦－烟台网格软件技术有限公司
  */
 
-/**任务队列
- * Class TaskQueue
- */
-abstract class TaskQueue
+class TaskQueue
 {
     /**
-     * @param $queueName
+     * TaskQueue constructor.
      */
-    function  TaskQueue(){}
-
-    /**task async callback
-     * @param $v
-     */
-    abstract  function  AsyncTaskCallback($v);
+    public function __construct()
+    {
+    }
 
     /**
-     * @param $task
-     * @return mixed
+     * @param bool|false $async
+     * @return swoole_process
      */
-    abstract  function  PushTask($task);
+    public static function Start($async = false)
+    {
+        if ($async) {
+            return CreateProcess(function (swoole_process $worker) {
+                Swoole::getInstance()->event->runWorker(2);
+            });
+        } else {
+            Swoole::getInstance()->event->runWorker(2);
+        }
+    }
 
-    /**清除task
+    /**
+     * @param $userFunc
+     * @param array $param
      * @return mixed
+     * @throws \Swoole\Exception\NotFound
      */
-    abstract  function Clear();
+    public static function SendEvent($userFunc, $param = [])
+    {
+        $eventData[]=$userFunc;
+        $eventData=array_merge($eventData,$param);
+        return Swoole::getInstance()->event->dispatch($eventData);
+    }
+
+    /**
+     * test
+     */
+    public static function  TestEvent()
+    {
+        for ($i = 0; $i < 100; $i++)
+            TaskQueue::SendEvent(['Common', 'TestSysv']);
+    }
 }

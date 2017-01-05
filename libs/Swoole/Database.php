@@ -113,26 +113,38 @@ class Database
      */
     function start()
     {
+        if ($this->query('set autocommit = 0') === false)
+        {
+            return false;
+        }
         return $this->query('START TRANSACTION');
     }
-
-	/**
-	 * 提交事务处理
-	 * @return bool
-	 */
-	function commit()
-	{
-		return $this->query('COMMIT');
-	}
-
-	/**
-	 * 事务回滚
-	 * @return bool
-	 */
-	function rollback()
-	{
-		$this->query('ROLLBACK');
-	}
+    /**
+     * 提交事务处理
+     * @return bool
+     */
+    function commit()
+    {
+        if ($this->query('COMMIT') === false)
+        {
+            return false;
+        }
+        $this->query('set autocommit = 1');
+        return true;
+    }
+    /**
+     * 事务回滚
+     * @return bool
+     */
+    function rollback()
+    {
+        if ($this->query('ROLLBACK') === false)
+        {
+            return false;
+        }
+        $this->query('set autocommit = 1');
+        return true;
+    }
 
     /**
      * 执行一条SQL语句

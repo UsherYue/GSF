@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fdc888ce-6a7d-4c41-8b41-605c532f1c46" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/apps/models/Page.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/common/BaseModel.php" afterPath="$PROJECT_DIR$/libs/common/BaseModel.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/common/Cache.php" afterPath="$PROJECT_DIR$/libs/common/Cache.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/Swoole/Database.php" afterPath="$PROJECT_DIR$/libs/Swoole/Database.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/apps/common/Helper.php" afterPath="$PROJECT_DIR$/apps/common/Helper.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/common/Helper.php" afterPath="$PROJECT_DIR$/libs/common/Helper.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/Swoole/Model.php" afterPath="$PROJECT_DIR$/libs/Swoole/Model.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/apps/controllers/Page.php" afterPath="$PROJECT_DIR$/apps/controllers/Page.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/Swoole/Database/Proxy.php" afterPath="$PROJECT_DIR$/libs/Swoole/Database/Proxy.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/RunHttpServer.php" afterPath="$PROJECT_DIR$/RunHttpServer.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/Swoole/SelectDB.php" afterPath="$PROJECT_DIR$/libs/Swoole/SelectDB.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/apps/configs/global.php" afterPath="$PROJECT_DIR$/apps/configs/global.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/logs/http_server.pid" afterPath="$PROJECT_DIR$/logs/http_server.pid" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libs/lib_config.php" afterPath="$PROJECT_DIR$/libs/lib_config.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/push_config.ini" afterPath="$PROJECT_DIR$/config/push_config.ini" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="fdc888ce-6a7d-4c41-8b41-605c532f1c46" name="Default" comment="" />
     <ignored path="GSF.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
@@ -223,7 +206,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="recentsLimit" value="5" />
     <property name="restartRequiresConfirmation" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../12XueSocietyService" />
   </component>
   <component name="RunManager" selected="PHP Script.RunHttpServer.php">
     <configuration default="false" name="rewrite.php" type="PhpLocalRunConfigurationType" factoryName="PHP Console" temporary="true" path="$PROJECT_DIR$/apps/configs/rewrite.php">
@@ -289,7 +272,7 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39976552" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3282532" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282532" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />

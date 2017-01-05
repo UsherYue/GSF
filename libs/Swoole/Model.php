@@ -121,7 +121,6 @@ class Model
 	/**
 	 * 插入一条新的记录到表
 	 * @param $data Array 必须是键值（表的字段对应值）对应
-	 * @delay bool  false 延迟插入
 	 * @return int
 	 */
     public function put($data)

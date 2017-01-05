@@ -75,6 +75,7 @@ abstract class Log
             return false;
         }
         $level_str = self::$level_str[$level];
+        date_default_timezone_set('Asia/Shanghai');
         return date(self::$date_format)."\t{$level_str}\t{$msg}\n";
     }
 

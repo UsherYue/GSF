@@ -92,7 +92,7 @@ abstract class WebSocket extends HttpServer
         {
             if($conn['time'] < $now - $this->heart_time)
             {
-                $this->log("connection[$client_id] timeout.", 'CLOSE');
+                $this->log("connection[$client_id] timeout.". 'CLOSE');
                 $this->close($client_id);
             }
         }

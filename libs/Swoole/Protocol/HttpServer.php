@@ -393,7 +393,7 @@ class HttpServer extends Swoole\Protocol\WebServer implements  Swoole\IFace\Prot
      * @param $request
      * @return Swoole\Response
      */
-    function onRequest(Swoole\Request $request)
+    function onRequest(Swoole\Request &$request)
     {
         $response = new Swoole\Response;
         $this->currentResponse = $response;

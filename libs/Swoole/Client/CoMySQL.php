@@ -2,6 +2,7 @@
 namespace Swoole\Client;
 use Swoole\Database\MySQLi;
 use Swoole\Database\MySQLiRecord;
+use Swoole\Database\Proxy;
 
 /**
  * 并发MySQL客户端

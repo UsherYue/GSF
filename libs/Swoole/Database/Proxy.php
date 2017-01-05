@@ -105,6 +105,28 @@ class Proxy
         return $db->query($sql);
     }
 
+    /**
+     * @return bool
+     */
+    function start(){
+        return $this->getDB(self::DB_MASTER)->start();
+    }
+
+    /**
+     * @return bool
+     */
+    function commit(){
+        return $this->getDB(self::DB_MASTER)->commit();
+    }
+
+    /**
+     * @return bool
+     */
+    function rollback(){
+        return $this->getDB(self::DB_MASTER)->rollback();
+    }
+
+
     protected function connect($config)
     {
         $db = new Swoole\Database($config);

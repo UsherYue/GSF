@@ -433,17 +433,12 @@ class Swoole
         $response = new Swoole\Response();
         //初始化全局var
         $request->setGlobal();
-
-
         //处理静态请求
         if (!empty($this->server->config['apps']['do_static']) and $this->server->doStaticRequest($request, $response)) {
             return $response;
         }
-
         //获取全局swoole 对象
         $php = Swoole::getInstance();
-
-
         //将对象赋值到控制器
         $php->request = $request;
         $php->response = $response;
@@ -468,7 +463,6 @@ class Swoole
         }
 
         //重定向 $php->header
-        //$php->http->header("Location",'http://www.baidu.com');
         if (isset($response->head['Location']) and ($response->http_status < 300 or $response->http_status > 399)) {
             $response->setHttpStatus(301);
         }
@@ -495,11 +489,6 @@ class Swoole
     {
 
         $mvc = call_user_func($this->router_function);
-        //var_dump($mvc);
-//        echo '<pre>';
-//        var_dump($mvc);
-     //  var_dump($this->router_function[0]->config->config['rewrite']);
-//        echo '</pre>';
         if ($mvc === false) {
             $this->http->status(404);
             return Swoole\Error::info('MVC Error', "url route fail!");
@@ -517,7 +506,6 @@ class Swoole
             return Swoole\Error::info('MVC Error!', "app[{$mvc['app']}] name incorrect.Regx: /^[a-z0-9_]+$/i");
         }
         $this->env['mvc'] = $mvc;
-
         //使用命名空间，文件名必须大写
         $controller_class = '\\App\\Controller\\' . ucwords($mvc['controller']);
         if (self::$controller_path) {
@@ -539,7 +527,6 @@ class Swoole
         return Swoole\Error::info('MVC Error', "Controller <b>{$mvc['controller']}</b>[{$controller_path}] not exist!");
 
         do_action:
-
         $this->request = new \Swoole\Request();
         $this->request->initWithLamp();
 
@@ -552,7 +539,6 @@ class Swoole
             $this->http->status(404);
             return Swoole\Error::info('MVC Error!' . $mvc['view'], "View <b>{$mvc['controller']}->{$mvc['view']}</b> Not Found!");
         }
-
         $param = empty($mvc['param']) ? null : $mvc['param'];
         $method = $mvc['view'];
         /***************参数过滤********************/
@@ -633,16 +619,14 @@ function swoole_urlrouter_rewrite(&$uri)
     $match = array();
     $uri_for_regx = '/' . $uri;
 
-    /////////////////
     foreach ($rewrite as $rule) {
-
         if (preg_match('#' . $rule['regx'] . '#i', $uri_for_regx, $match)) {
             //如果匹配边界没有/ 那么不匹配
             $subRegx = preg_replace('#' . $rule['regx'] . '#i', "", $uri_for_regx);
-            if ($subRegx{0} != '/' && $subRegx != "") {
+            //if ($subRegx{0} != '/' && $subRegx != "") {
+            if ( $subRegx != "" && $subRegx{0} != '/' ) {
                 continue;
             }
-            // var_dump( $subRegx);
             if (isset($rule['get'])) {
                 $p = explode(',', $rule['get']);
                 foreach ($p as $k => $v) {

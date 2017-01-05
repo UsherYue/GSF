@@ -7,15 +7,16 @@
  * Time: 下午3:41
  * 心怀教育梦－烟台网格软件技术有限公司
  */
+
 namespace App\Controller;
 
 use Swoole;
 
 trait XssClean
 {
-    /**xss过滤
-     * @param $val
-     * @return mixed
+    /**
+     * @param $data
+     * @return mixed|string
      */
     public function RemoveXSS($data)
     {
@@ -69,7 +70,7 @@ class BaseController extends Swoole\Controller
 {
 
     //http 请求时间
-    private  $_beginTime=0;
+    private $_beginTime = 0;
     /**
      * xss
      */
@@ -78,7 +79,8 @@ class BaseController extends Swoole\Controller
 
     /**
      * @param $key
-     * @return null
+     * @param string $default
+     * @return string
      */
     function Get($key, $default = "")
     {
@@ -87,7 +89,8 @@ class BaseController extends Swoole\Controller
 
     /**
      * @param $key
-     * @return null
+     * @param string $default
+     * @return string
      */
     function Post($key, $default = "")
     {
@@ -96,7 +99,8 @@ class BaseController extends Swoole\Controller
 
     /**
      * @param $key
-     * @return null
+     * @param string $default
+     * @return string
      */
     function GetRequestHeader($key, $default = "")
     {
@@ -110,14 +114,6 @@ class BaseController extends Swoole\Controller
     function SetResponseHeader($key, $value)
     {
         $this->response->setHeader($key, $value);
-    }
-
-    /**
-     * @return mixed
-     */
-    function Method()
-    {
-        return $this->request->server['REQUEST_METHOD'];
     }
 
     /**
@@ -142,48 +138,47 @@ class BaseController extends Swoole\Controller
     public function BeforeRequest()
     {
 
-
     }
 
-
     /**在请求之前分析
-     * @param $uri
+     * @param $mvc
      */
-    public  function  _beforeRequestAnalysis($mvc){
-        $this->_beginTime=getMillisecond();
+    public function  _beforeRequestAnalysis($mvc)
+    {
+        $this->_beginTime = getMillisecond();
 
     }
 
     /**在请求之后分析
      * @param $uri
      */
-    public  function  _afterRequestAnalysis($mvc){
+    public function  _afterRequestAnalysis($mvc)
+    {
         //更新
-        $endTime=getMillisecond();
-        $execTime=$endTime-$this->_beginTime;
-        $result=M('we_http_response_time')->gets([
-            'controller'=>$mvc['controller'],
-            'view'=>$mvc['view'],
-            'uri'=>$mvc['uri']
+        $endTime = getMillisecond();
+        $execTime = $endTime - $this->_beginTime;
+        $result = M('we_http_response_time')->gets([
+            'controller' => $mvc['controller'],
+            'view' => $mvc['view'],
+            'uri' => $mvc['uri']
         ]);
-        if(empty($result)){
+        if (empty($result)) {
             M('we_http_response_time')->put([
-                'controller'=>$mvc['controller'],
-                'view'=>$mvc['view'],
-                'uri'=>$mvc['uri'],
-                'time'=>$execTime
+                'controller' => $mvc['controller'],
+                'view' => $mvc['view'],
+                'uri' => $mvc['uri'],
+                'time' => $execTime
             ]);
-            return ;
+            return;
         }
         //执行时间大于前一次
-        if($execTime>$result[0]['time']){
-            M('we_http_response_time')->sets(['time'=>$execTime],[
-                'controller'=>$mvc['controller'],
-                'view'=>$mvc['view'],
-                'uri'=>$mvc['uri']
+        if ($execTime > $result[0]['time']) {
+            M('we_http_response_time')->sets(['time' => $execTime], [
+                'controller' => $mvc['controller'],
+                'view' => $mvc['view'],
+                'uri' => $mvc['uri']
             ]);
         }
-
     }
 
     /**在请求之后
@@ -191,7 +186,6 @@ class BaseController extends Swoole\Controller
      */
     public function AfterRequest()
     {
-
 
     }
 
@@ -232,6 +226,14 @@ class BaseController extends Swoole\Controller
                 }
                 break;
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    function Method()
+    {
+        return $this->request->server['REQUEST_METHOD'];
     }
 
     /**

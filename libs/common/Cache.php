@@ -8,31 +8,9 @@
  * 心怀教育梦－烟台网格软件技术有限公司
  */
 
-
-/**mutex
- * @var null
- */
-//全局锁
 class Cache
 {
-     public  static  $RedisconnectMutex=null;
-    /**
-     * @return bool
-     */
-    public static function  IsConnect()
-    {
-        global $redis;
-        return $redis->isConnect();
-    }
-
-    /**
-     * @return bool|void
-     */
-    public static function Connect()
-    {
-        global $redis;
-        return $redis->connect();
-    }
+    public static $RedisconnectMutex = null;
 
     /**
      * @return bool|void
@@ -53,7 +31,7 @@ class Cache
     }
 
     /**
-     * @param $uid
+     * @param $key
      * @return mixed
      */
     public static function GetCache($key)
@@ -62,7 +40,7 @@ class Cache
         if (!$result) {
             //断线重连
             //try lock
-            if(Cache::$RedisconnectMutex->trylock()){
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $result = Swoole::getInstance()->redis->get($key);
@@ -72,8 +50,26 @@ class Cache
     }
 
     /**
-     * @param $uid
-     * @return mixed
+     * @return bool
+     */
+    public static function  IsConnect()
+    {
+        global $redis;
+        return $redis->isConnect();
+    }
+
+    /**
+     * @return bool|void
+     */
+    public static function Connect()
+    {
+        global $redis;
+        return $redis->connect();
+    }
+
+    /**
+     * @param $key
+     * @return bool|string
      */
     public static function GetCacheNormal($key)
     {
@@ -81,7 +77,7 @@ class Cache
         if (!$result) {
             //断线重连
             //try lock
-            if(Cache::$RedisconnectMutex->trylock()){
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $result = Swoole::getInstance()->redis->get($key);
@@ -90,8 +86,9 @@ class Cache
         return $result;
     }
 
-    /**key是否存在
+    /**
      * @param $key
+     * @return bool
      */
     public static function  Exists($key)
     {
@@ -99,7 +96,7 @@ class Cache
         if (!$bExists) {
             //断线重连
             //try lock
-            if(Cache::$RedisconnectMutex->trylock()){
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $bExists = Swoole::getInstance()->redis->exists($key);
@@ -108,9 +105,8 @@ class Cache
         return $bExists;
     }
 
-
     /**
-     * @param $uid
+     * @param $key
      * @param $data
      * @param int $lifttime
      * @return bool
@@ -122,10 +118,33 @@ class Cache
         if (!$bSuccess) {
             //断线重连
             //try lock
-            if(Cache::$RedisconnectMutex->trylock()) {
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $bSuccess = Swoole::getInstance()->redis->set($key, json_encode($data))
+                    && Swoole::getInstance()->redis->expire($key, $lifttime);
+            }
+        }
+        return $bSuccess;
+    }
+
+    /**不进行json_encode
+     * @param $key
+     * @param $data
+     * @param int $lifttime
+     * @return bool
+     */
+    public static function  SetCacheNormal($key, $data, $lifttime = 300)
+    {
+        $bSuccess = Swoole::getInstance()->redis->set($key, $data)
+            && Swoole::getInstance()->redis->expire($key, $lifttime);
+        if (!$bSuccess) {
+            //断线重连
+            //try lock
+            if (Cache::$RedisconnectMutex->trylock()) {
+                (!Cache::IsConnect()) && Cache::Connect();
+                Cache::$RedisconnectMutex->unlock();
+                $bSuccess = Swoole::getInstance()->redis->set($key, $data)
                     && Swoole::getInstance()->redis->expire($key, $lifttime);
             }
         }
@@ -141,7 +160,7 @@ class Cache
         $result = Swoole::getInstance()->redis->del($key);
         if (!$result) {
             //断线重连
-            if(Cache::$RedisconnectMutex->trylock()) {
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $result = Swoole::getInstance()->redis->del($key);
@@ -153,6 +172,7 @@ class Cache
     /**
      * @param $key
      * @param $val
+     * @return int
      */
     public static function  RPush($key, $val)
     {
@@ -160,7 +180,7 @@ class Cache
         if (!$result) {
             //断线重连
             //lock
-            if(Cache::$RedisconnectMutex->trylock()) {
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $result = Swoole::getInstance()->redis->rPush($key, $val);
@@ -171,14 +191,14 @@ class Cache
 
     /**
      * @param $key
-     * @param $val
+     * @return string
      */
     public static function  RPop($key)
     {
         $result = Swoole::getInstance()->redis->rPop($key);
         if (!$result) {
             //断线重连
-            if(Cache::$RedisconnectMutex->trylock()) {
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $result = Swoole::getInstance()->redis->rPop($key);
@@ -189,14 +209,14 @@ class Cache
 
     /**
      * @param $key
-     * @param $val
+     * @return string
      */
     public static function  LPop($key)
     {
         $result = Swoole::getInstance()->redis->lPop($key);
         if (!$result) {
             //断线重连
-            if(Cache::$RedisconnectMutex->trylock()) {
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $result = Swoole::getInstance()->redis->lPop($key);
@@ -208,6 +228,7 @@ class Cache
     /**
      * @param $key
      * @param $val
+     * @return int
      */
     public static function  LPush($key, $val)
     {
@@ -215,14 +236,64 @@ class Cache
         if (!$result) {
             //断线重连
             //lock
-            if(Cache::$RedisconnectMutex->trylock()) {
+            if (Cache::$RedisconnectMutex->trylock()) {
                 (!Cache::IsConnect()) && Cache::Connect();
                 Cache::$RedisconnectMutex->unlock();
                 $result = Swoole::getInstance()->redis->lPush($key, $val);
-           }
+            }
         }
         return $result;
     }
+
+    /**
+     * @return string
+     */
+    public static function  Md5Key()
+    {
+        $args = func_get_args();
+        return md5(implode(':', $args));
+    }
+
+    /**
+     * @return string
+     */
+    public static function  Key()
+    {
+        $args = func_get_args();
+        return (implode(':', $args));
+    }
+
+    /**
+     * @param $hash
+     * @param $field
+     * @param $value
+     */
+    public static function  HSet($hash, $field, $value)
+    {
+
+    }
+
+    /**
+     * @param $hash
+     * @param $field
+     */
+    public static function  HGet($hash, $field)
+    {
+
+    }
+
+    /**
+     * @param $hash
+     * @param $field
+     */
+    public static function  HGetAll($hash, $field)
+    {
+
+
+    }
+
+
 }
+
 //设置mutex
-Cache::$RedisconnectMutex=new swoole_lock(SWOOLE_MUTEX);
+Cache::$RedisconnectMutex = new swoole_lock(SWOOLE_MUTEX);

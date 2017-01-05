@@ -7,6 +7,7 @@
  * Time: 下午1:05
  * 心怀教育梦－烟台网格软件技术有限公司
  */
+
 namespace App\Model;
 
 use Swoole;
@@ -19,20 +20,20 @@ use Swoole\SelectDB;
 
 class BaseModel extends Swoole\Model
 {
+    //并发查询
+    const COCURRENCY_QUERY = 0;
+
+    //普通查询
+    const NORMAL_QUERY = 1;
+
     public $primary = 'id';
+
     public $foreignkey = 'fid';
+
     /**sql builder
      * @var \SqlBuilder
      */
     public $sqlBuilder;
-
-    /**
-     * @return \SqlBuilder
-     */
-    public function sqlBuilder()
-    {
-        return $this->sqlBuilder;
-    }
 
     /** 扩展构造函数
      * @param Swoole $swoole
@@ -44,11 +45,32 @@ class BaseModel extends Swoole\Model
         parent::__construct($swoole, $db_key);
     }
 
-    /**mulity insert
-     * @param $array
-     * @param bool|false $delay 是否延迟插入
+    /**直接根据表名字创建 BaseModel
+     * @param $table_name
+     * @param string $db_key master slave
+     * @return BaseModel
      */
-    function Puts($array)
+    static function Table($table_name, $db_key = 'master')
+    {
+        $model = new BaseModel(Swoole::getInstance()->model->swoole, $db_key);
+        $model->table = $table_name;
+        return $model;
+    }
+
+    /**
+     * @return \SqlBuilder
+     */
+    public function sqlBuilder()
+    {
+        return $this->sqlBuilder;
+    }
+
+    /**
+     * @param $array
+     * @param int $queryType
+     * @return bool|Swoole\Database\MySQLiRecord
+     */
+    function Puts($array, $queryType = self::NORMAL_QUERY)
     {
         if ($array == null || !is_array($array)) {
             return false;
@@ -67,13 +89,18 @@ class BaseModel extends Swoole\Model
             $insertValues[] = '(' . implode(',', $item) . ')';
         }
         $sqlInsert = sprintf("insert  into `$this->table` ($fields) VALUES %s", implode(',', $insertValues));
-        //echo $sqlInsert;
-        return $this->db->query($sqlInsert);
+        //COMYSQL
+        if (self::COCURRENCY_QUERY == $queryType) {
+            return $this->swoole->codb->query($sqlInsert);
+        } else {
+            return $this->db->query($sqlInsert);
+        }
     }
 
     /**通过表达式进行update是针对update的一个扩展 支持不同情况
      * @param $data
-     * @param $prm
+     * @param $prms
+     * @return Swoole\Database\MySQLiRecord
      */
     function  SetWithExpr($data, $prms)
     {
@@ -114,25 +141,10 @@ class BaseModel extends Swoole\Model
                     $arrSetExpr[] = $v;
                 }
             }
-            //var_dump($prms);
             $condition = implode(' and ', $arrSetExpr);
             $sql = ($condition == '' ? $sql : $sql . '  where ' . $condition);
         }
         return $this->db->query($sql);
-
-    }
-
-
-    /**直接根据表名字创建 BaseModel
-     * @param $table_name
-     * @param string $db_key master slave
-     * @return BaseModel
-     */
-    static function Table($table_name, $db_key = 'master')
-    {
-        $model = new BaseModel(Swoole::getInstance()->model->swoole, $db_key);
-        $model->table = $table_name;
-        return $model;
     }
 
     /**执行SQL
@@ -143,7 +155,6 @@ class BaseModel extends Swoole\Model
     {
         return $this->db->query($sql);
     }
-
 
     /**根据字段获取
      * @param $fields
@@ -169,7 +180,6 @@ class BaseModel extends Swoole\Model
         return empty($result) ? $result : $result[0];
     }
 
-
     /**
      * sql
      * @return string
@@ -181,20 +191,20 @@ class BaseModel extends Swoole\Model
 
     /**分页查询
      * @param $params
-     * @param null $pager
      * @param int $pageSize
      * @param int $pageNo
-     * @return array|bool
+     * @param string $count_fields
+     * @param bool|true $htmlOn
+     * @return array
      * @throws \Exception
      */
-    public function GetsPage($params, $pageSize = 1, $pageNo = 1,  $count_fields = "1",$htmlOn = true)
+    public function GetsPage($params, $pageSize = 1, $pageNo = 1, $count_fields = "1", $htmlOn = true)
     {
         if (empty($params)) {
             throw new \Exception("no params.");
         }
         $pager = null;
         $params['page'] = $pageNo;
-        //$params['cache']=['object_id'=>'master'];
         $selectdb = new SelectDB($this->db);
         $selectdb->from($this->table);
         $selectdb->count_fields = $count_fields;
@@ -202,10 +212,10 @@ class BaseModel extends Swoole\Model
         $selectdb->select($this->select);
         $selectdb->page_size = $pageSize;
         //如果没有设置order 默认主键排序 默认是id 如果需要可自己设置order
-//        if (!isset($params['order']))
-//        {
-//            $params['order'] = "`{$this->table}`.{$this->primary} desc";
-//        }
+        //if (!isset($params['order']))
+        //{
+        //   $params['order'] = "`{$this->table}`.{$this->primary} desc";
+        //}
         $selectdb->put($params);
         if (isset($params['page'])) {
             $selectdb->paging();
@@ -236,7 +246,6 @@ class BaseModel extends Swoole\Model
         }
         $pager = null;
         $params['page'] = $pageNo;
-        //$params['cache']=['object_id'=>'master'];
         $selectdb = new SelectDB($this->db);
         $selectdb->from($this->table);
         $selectdb->count_fields = false;
@@ -258,93 +267,37 @@ class BaseModel extends Swoole\Model
         ];
     }
 
-    /**
-     *
-     * @param $params
-     */
-    public  function  GetOne($params){
-        $params['limit']=1;
-        $result=$this->gets($params);
-        return empty($result)?[]:$result[0];
-    }
 
-    /**内存分页
-     * @param $allCount
-     * @param $data
-     * @param $page
-     * @param $pagesize
+    /**
+     * @param $params
      * @return array
+     * @throws \Exception
      */
-     public  function  GetsMemPage($allCount,$data,$page,$pagesize){
-         if($allCount==0){
-             return [
-                 'pagesize'=>$pagesize,
-                 'total'=>0,
-                 'current'=>$page,
-                 'totalpage'=>0,
-                 'list'=>[]
-             ];
-         }elseif($allCount>0&&$allCount<=$pagesize){
-             //不够一页
-             if($page==1){
-                 return [
-                     'pagesize'=>$pagesize,
-                     'total'=>$allCount,
-                     'totalpage'=>1,
-                     'current'=>1,
-                     'list'=>$data
-                 ];
-             }
-             else{
-                 return [
-                     'pagesize'=>$pagesize,
-                     'total'=>$allCount,
-                     'totalpage'=>1,
-                     'current'=>$page,
-                     'list'=>[]
-                 ];
-             }
-         }elseif($allCount>$pagesize){
-             //大于1页
-             $totalPage=($allCount%$pagesize==0)?intval($allCount/$pagesize):intval($allCount/$pagesize)+1;
-             if($page>$totalPage){
-                 return [
-                     'pagesize'=>$pagesize,
-                     'total'=>$allCount,
-                     'totalpage'=>$totalPage,
-                     'current'=>$page,
-                     'list'=>[]
-                 ];
-             }else{
-                 return [
-                     'pagesize'=>$pagesize,
-                     'total'=>$allCount,
-                     'totalpage'=>$totalPage,
-                     'current'=>$page,
-                     'list'=>array_slice($data,($page-1)*$pagesize,$pagesize)
-                 ];
-             }
-         }
-     }
+    public function  GetOne($params)
+    {
+        $params['limit'] = 1;
+        $result = $this->gets($params);
+        return empty($result) ? [] : $result[0];
+    }
 
     /**替换 插入数据
      * @param array $fields
      * @param array $values
      * @return bool|Swoole\Database\MySQLiRecord
      */
-    public  function  ReplaceInto($fields=[],$values=[]){
-        if(is_string($fields)){
-            $fieldList="({$fields})";
-        }elseif(is_array($fields)){
-            $fieldList='('.implode(',',$fields).')';
+    public function  ReplaceInto($fields = [], $values = [])
+    {
+        if (is_string($fields)) {
+            $fieldList = "({$fields})";
+        } elseif (is_array($fields)) {
+            $fieldList = '(' . implode(',', $fields) . ')';
         }
-        if(is_string($values)){
-            $valueList="({$values})";
-        }elseif(is_array($values)){
-            $valueList='('.implode(',',$values).')';
+        if (is_string($values)) {
+            $valueList = "({$values})";
+        } elseif (is_array($values)) {
+            $valueList = '(' . implode(',', $values) . ')';
         }
-        $sql="replace into {$this->table} {$fieldList} VALUES {$valueList} ";
-        //echo $sql;
+        $sql = "replace into {$this->table} {$fieldList} VALUES {$valueList} ";
         return $this->db->query($sql);
     }
 
@@ -353,7 +306,8 @@ class BaseModel extends Swoole\Model
      * @param array $values
      * @return bool|Swoole\Database\MySQLiRecord
      */
-    public  function  ReplaceIntoCombine($fields=[],$values=[]){
+    public function  ReplaceIntoCombine($fields = [], $values = [])
+    {
         if (is_string($fields)) {
             $fieldList = "({$fields})";
         } elseif (is_array($fields)) {
@@ -384,5 +338,27 @@ class BaseModel extends Swoole\Model
         return $this->db->query($sql);
     }
 
+    /**
+     * @return bool
+     */
+    public function Start()
+    {
+        return $this->db->start();
+    }
 
+    /**
+     * @return bool
+     */
+    public function  Commit()
+    {
+        return $this->db->commit();
+    }
+
+    /**
+     * @return bool
+     */
+    public function  Rollback()
+    {
+        return $this->db->rollback();
+    }
 }

@@ -54,7 +54,7 @@ class Event
          */
         else
         {
-            return $this->_queue->push($_args);
+            return $this->_queue->push($function);
         }
 	}
 
@@ -66,15 +66,12 @@ class Event
         if (empty($this->config['logger']))
         {
             $logger = new Log\EchoLog(array('display' => true));
-        }
-        else
-        {
+        } else {
             /**
              * Swoole\Log
              */
             $logger = \Swoole::$php->log($this->config['logger']);
         }
-
         while (true)
         {
             $event = $this->_queue->pop();
@@ -87,6 +84,7 @@ class Event
                 }
                 else
                 {
+                    //获取参数
                     $params = array_slice($event, 1);
                     call_user_func_array($function, $params);
                 }

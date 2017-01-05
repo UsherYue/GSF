@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PHPProject
  * SqlBuilder.php Created by usher.yue.
@@ -8,13 +7,12 @@
  * Time: 下午12:32
  * 心怀教育梦－烟台网格软件技术有限公司
  */
+
 class SqlBuilder
 {
-
-    /**
-     * sql结果
-     * @var
-     */
+    const SQL_INSERT = 0;
+    const SQL_UPDATE = 1;
+    const SQL_SELECT = 2;
     protected $_sql = "";
     protected $_select = "";
     protected $_from = "";
@@ -26,14 +24,79 @@ class SqlBuilder
     protected $_limit = "";
     protected $_set = "";
     protected $_method;
+    //执行方式
     protected $_order = "";
     protected $_group = "";
     protected $_having = "";
 
-    //执行方式
-    const SQL_INSERT = 0;
-    const SQL_UPDATE = 1;
-    const SQL_SELECT = 2;
+    /**set产生语句
+     * @param $table
+     * @param $data
+     * @param $prms
+     * @return string
+     */
+    public static function GenericUpdateSql($table, $data, $prms)
+    {
+        $sql = "update {$table} set ";
+        if (is_string($data)) {
+            $sql .= $data;
+        } elseif (is_array($data)) {
+            //拼接expr数组情况下
+            if (array_key_exists('expr', $data)) {
+                $sql .= $data['expr'];
+                unset($data['expr']);
+            }
+            $arrSetExpr = [];
+            //判断是关联数组还是索引数组
+            if (is_assoc($data)) {
+                foreach ($data as $k => $v) {
+                    $arrSetExpr[] = "$k='$v'";
+                }
+            } else {
+                foreach ($data as $v) {
+                    $arrSetExpr[] = $v;
+                }
+            }
+            $condition = implode(',', $arrSetExpr);
+            $sql = ($condition == '' ? $sql : $sql . $condition);
+        }
+        if (is_string($prms)) {
+            $sql .= " where $prms";
+        } elseif (is_array($prms)) {
+            $arrSetExpr = [];
+            //判断是关联数组还是索引数组
+            if (is_assoc($prms)) {
+                foreach ($prms as $k => $v) {
+                    $arrSetExpr[] = "$k='$v'";
+                }
+            } else {
+                foreach ($prms as $v) {
+                    $arrSetExpr[] = $v;
+                }
+            }
+            //var_dump($prms);
+            $condition = implode(' and ', $arrSetExpr);
+            $sql = ($condition == '' ? $sql : $sql . '  where ' . $condition);
+        }
+        return $sql;
+    }
+
+    /**
+     * @param array $fields
+     * @return $this
+     */
+    public function select($fields = array())
+    {
+        $this->clear();
+        $this->_method = SqlBuilder::SQL_SELECT;
+        if (is_array($fields)) {
+            $selectFields = implode(' , ', $fields);
+            $this->_select = ($selectFields == "") ? " * " : $selectFields;
+        } else if (is_string($fields)) {
+            $this->_select = $fields;
+        }
+        return $this;
+    }
 
     /**
      * clear sql
@@ -52,23 +115,6 @@ class SqlBuilder
         $this->_order = "";
         $this->_having = "";
         $this->_group = "";
-    }
-
-    /**
-     * @param array $fields
-     * @return $this
-     */
-    public function select($fields = array())
-    {
-        $this->clear();
-        $this->_method = SqlBuilder::SQL_SELECT;
-        if (is_array($fields)) {
-            $selectFields = implode(' , ', $fields);
-            $this->_select = ($selectFields == "") ? " * " : $selectFields;
-        } else if (is_string($fields)) {
-            $this->_select = $fields;
-        }
-        return $this;
     }
 
     /**
@@ -95,7 +141,6 @@ class SqlBuilder
         $this->_group .= " group by $prm  ";
         return $this;
     }
-
 
     /**配合表达式
      * @param array $conditionExpr
@@ -127,24 +172,21 @@ class SqlBuilder
             $this->_where .= " $conditon";
         } else if (is_array($conditon)) {
             $arrCondition = [];
-            if (count($conditon) > 0 && is_string($conditon[0])) {
+            if (!is_assoc($conditon)) {
                 foreach ($conditon as $v) {
                     $arrCondition[] = $v;
                 }
-
             } else {
                 foreach ($conditon as $k => $v) {
                     $arrCondition[] = "$k='$v'";
                 }
             }
-
             if (!empty($arrCondition)) {
                 $this->_where .= implode(" and ", $arrCondition);
             }
         }
         return $this;
     }
-
 
     /**
      * @param $condition
@@ -176,9 +218,9 @@ class SqlBuilder
         return $this;
     }
 
-
     /**
-     * @param $arr
+     * @param string $arr
+     * @return $this
      */
     public function in($arr = "")
     {
@@ -195,8 +237,8 @@ class SqlBuilder
     }
 
     /**
-     * 支持关联数组和字符串
      * @param $field
+     * @return $this
      */
     public function  and_($field)
     {
@@ -318,8 +360,8 @@ class SqlBuilder
     }
 
     /**
-     * @param array $fields
      * @param array $values
+     * @return $this
      */
     public function values($values = [[]])
     {
@@ -361,7 +403,8 @@ class SqlBuilder
     }
 
     /**
-     * @param $expr
+     * @param string $expr
+     * @return $this
      */
     public function having($expr = "")
     {
@@ -375,6 +418,8 @@ class SqlBuilder
 
     /**
      * @param $num
+     * @param int $offset
+     * @return $this
      */
     public function limit($num, $offset = 0)
     {
@@ -386,7 +431,9 @@ class SqlBuilder
     }
 
     /**
-     * @param $field
+     * @param string $field
+     * @param string $order
+     * @return $this
      */
     public function orderby($field = '', $order = 'desc')
     {
@@ -399,74 +446,5 @@ class SqlBuilder
     }
 
 
-    /**set产生语句
-     * @param $table
-     * @param $data
-     * @param $prms
-     * @return string
-     */
-    public static function GenericUpdateSql($table, $data, $prms)
-    {
-        $sql = "update {$table} set ";
-        if (is_string($data)) {
-            $sql .= $data;
-        } elseif (is_array($data)) {
-            //拼接expr数组情况下
-            if (array_key_exists('expr', $data)) {
-                $sql .= $data['expr'];
-                unset($data['expr']);
-            }
-            $arrSetExpr = [];
-            //判断是关联数组还是索引数组
-            if (is_assoc($data)) {
-                foreach ($data as $k => $v) {
-                    $arrSetExpr[] = "$k='$v'";
-                }
-            } else {
-                foreach ($data as $v) {
-                    $arrSetExpr[] = $v;
-                }
-            }
-            $condition = implode(',', $arrSetExpr);
-            $sql = ($condition == '' ? $sql : $sql . $condition);
-        }
-        if (is_string($prms)) {
-            $sql .= " where $prms";
-        } elseif (is_array($prms)) {
-            $arrSetExpr = [];
-            //判断是关联数组还是索引数组
-            if (is_assoc($prms)) {
-                foreach ($prms as $k => $v) {
-                    $arrSetExpr[] = "$k='$v'";
-                }
-            } else {
-                foreach ($prms as $v) {
-                    $arrSetExpr[] = $v;
-                }
-            }
-            //var_dump($prms);
-            $condition = implode(' and ', $arrSetExpr);
-            $sql = ($condition == '' ? $sql : $sql . '  where ' . $condition);
-        }
-        return $sql;
-    }
-
-
 }
 
-//$builder=new SqlBuilder() ;
-//$builder->select(['a','b'])->from(['aa as ','bb vd'])->join("t1")->on("a=5")->onAnd("c=1")->wheres(['ax'=>1,'expr'=>"cx>=1"])->limit(100);
-//var_dump($builder->sql());
-//$builder->update(['a','b'])->set(['a'=>1,'ss'=>2])->where("a>1")->whereAnd("b<1");
-//var_dump($builder->sql());
-//$builder->insertinto("table_1",["a","b","c","d"])->values([["aaa","bbb","ccc","ddd"],["aaa","bbb","ccc","ddd"],["aaa","bbb","ccc","ddd"]]);
-//var_dump($builder->sql());
-
-//完整测试
-//echo $builder->select("*")->from("a,b as 3")->join("b")->on(['ccsxx'=>34566,'dss'=>"3"])->where(["a4"=>12,"2b"=>32,"c23"=>"42"])->and_("b=2")->and_(["a"=>1,"b"=>2,"c"=>"4"])->and_("s")->in([1,2,3,43,2,77])->orderby("cc desc")->limit(1,2)->sql();
-//echo $builder->insertinto("a","c,d,s,d,e")->values([[1,2,3,4,5],[2,3,4,5,6],[32,43,43,43]])->sql();
-//echo $builder->update("a")->set("a=1,b=4,c=c+1")->where("c>c+1")->and_("c<6")->sql();
-
-//echo $builder->update("a,b")->set(['a'=>3,'b'=>1,'expr'=>'c=c-1'])->where("cc>11")->sql();
-//echo $builder->update("a,b")->set(['a=1','b=3'])->where("cc>11")->sql();
-//echo $builder->GenericUpdateSql('sss',"a=1",'b=4');

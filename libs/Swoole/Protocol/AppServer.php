@@ -13,7 +13,6 @@ class AppServer extends HttpServer
 {
     protected $router_function;
     protected $apps_path;
-
     //启动的时候进入   swoole c扩展中处理
     function onStart($serv)
     {
@@ -58,9 +57,7 @@ class AppServer extends HttpServer
      */
     function onRequest(Swoole\Request &$request)
     {
-        //var_dump($request);
         //收到http请求
-
         return Swoole::getInstance()->handlerServer($request);
     }
 }
