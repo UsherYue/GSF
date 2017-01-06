@@ -1,1 +1,20 @@
 [2016-07-11 13:11:04 #3020.0]	WARNING	swServer_signal_hanlder: Fatal Error: manager process exit. status=0, signal=1.
+[2017-01-06 21:43:39 *4626.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Page.php on line 14.
+[2017-01-06 21:43:39 $4625.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:43:48 *4629.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Page.php on line 14.
+[2017-01-06 21:43:48 $4625.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:43:49 *4630.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Page.php on line 14.
+[2017-01-06 21:43:49 $4625.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:43:52 *4631.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Page.php on line 14.
+[2017-01-06 21:43:52 $4625.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:43:59 *4632.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Test.php on line 14.
+[2017-01-06 21:43:59 $4625.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:44:04 *4637.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Test.php on line 14.
+[2017-01-06 21:44:04 $4636.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:45:09 *4649.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Test.php on line 14.
+[2017-01-06 21:45:09 $4648.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:47:39 *4666.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Test.php on line 14.
+[2017-01-06 21:47:39 $4665.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:50:02 *4677.0]	ERROR	zm_deactivate_swoole (ERROR 103): Fatal error: Class 'App\Controller\BaseController' not found in /Users/usher.yue/PHPProject/GSF/apps/controllers/Test.php on line 15.
+[2017-01-06 21:50:02 $4676.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=255, signal=0
+[2017-01-06 21:57:59 $4797.0]	WARNING	swManager_check_exit_status: worker#0 abnormal exit, status=0, signal=2

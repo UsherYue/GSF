@@ -7,11 +7,8 @@
  * Time: 下午4:05
  * 心怀教育梦－烟台网格软件技术有限公司
  */
-//    编写PHP7+代码后需要运行在>=php7.0.0获取性能提升
-//    if (version_compare("7.0.0", PHP_VERSION, ">")>0) {
-//        die("PHP Version 7.0.0 or greater is required!!!");
-//屏蔽警告
-error_reporting(E_ERROR);
+
+error_reporting(E_ALL&(~E_WARNING));
 use Swoole\Network\Server;
 use Swoole\Log\EchoLog;
 use Swoole\Config;
@@ -49,10 +46,6 @@ Server::start(function(){
     if(DEAMON){
         $server->daemonize();
     }
-    //启动任务
-    //$Task=Task::StartTask();
-    //启动服务
-
     $server->run(array('worker_num' =>1, 'react_num'=>2, 'max_request' => 500000, 'log_file' => LOGFILE));
 });
 

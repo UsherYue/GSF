@@ -138,8 +138,12 @@ function swoole_error_handler($errno, $errstr, $errfile, $errline)
     echo Swoole\Error::info($title, $info);
 }
 
+//加载扩展
 function commonLoader($dir)
 {
+    if(!is_dir($dir)){
+        return [];
+    }
     $files=array();
     if(is_dir($dir))
     {
@@ -185,7 +189,6 @@ if(defined('MVCAPP')){
     );
     doLoader($loader);
 }
-
 
 //在路由之前增加钩子 用于进行安全认证 xss  过滤 等等
 //用于全局路由之前
