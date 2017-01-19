@@ -31,6 +31,7 @@ class TaskQueue
         } else {
             Swoole::getInstance()->event->runWorker(2);
         }
+
     }
 
     /**
@@ -46,12 +47,4 @@ class TaskQueue
         return Swoole::getInstance()->event->dispatch($eventData);
     }
 
-    /**
-     * test
-     */
-    public static function  TestEvent()
-    {
-        for ($i = 0; $i < 100; $i++)
-            TaskQueue::SendEvent(['Common', 'TestSysv']);
-    }
 }

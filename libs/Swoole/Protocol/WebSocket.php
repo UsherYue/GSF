@@ -173,7 +173,7 @@ abstract class WebSocket extends HttpServer
      * @param Swoole\Request $request
      * @return Swoole\Response
      */
-    function onRequest(Swoole\Request $request)
+    function onRequest(Swoole\Request &$request)
     {
         return $request->isWebSocket() ? $this->onWebSocketRequest($request) : $this->onHttpRequest($request);
     }
@@ -185,16 +185,18 @@ abstract class WebSocket extends HttpServer
      */
     function afterResponse(Swoole\Request $request, Swoole\Response $response)
     {
+        //$this->log($request->fd);
         if ($request->isWebSocket())
         {
             $conn = array('header' => $request->head, 'time' => time());
             $this->connections[$request->fd] = $conn;
-
-            if (count($this->connections) > $this->max_connect)
-            {
-                $this->cleanConnection();
-            }
-
+//            var_dump($conn);
+            $this->log('Save Client'.$request->fd);
+//            if (count($this->connections) > $this->max_connect)
+//            {
+//                $this->cleanConnection();
+//            }
+ //   var_dump($this->connections);
             $this->onWsConnect($request->fd, $request);
         }
         parent::afterResponse($request, $response);

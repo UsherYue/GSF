@@ -198,7 +198,7 @@ class BaseModel extends Swoole\Model
      * @return array
      * @throws \Exception
      */
-    public function GetsPage($params, $pageSize = 1, $pageNo = 1, $count_fields = "1", $htmlOn = true)
+    public function getPages($params, $pageSize = 1, $pageNo = 1, $count_fields = "1", $htmlOn = true)
     {
         if (empty($params)) {
             throw new \Exception("no params.");

@@ -12,57 +12,17 @@ use Swoole;
  */
 class MySQL implements \Swoole\IDatabase
 {
+    const DEFAULT_PORT = 3306;
     public $debug = false;
     public $conn = null;
     public $config;
-    const DEFAULT_PORT = 3306;
 
     function __construct($db_config)
     {
-        if (empty($db_config['port']))
-        {
+        if (empty($db_config['port'])) {
             $db_config['port'] = self::DEFAULT_PORT;
         }
         $this->config = $db_config;
-    }
-
-    /**
-     * 连接数据库
-     *
-     * @see Swoole.IDatabase::connect()
-     */
-    function connect()
-    {
-        $db_config = $this->config;
-        if (empty($db_config['persistent']))
-        {
-            $this->conn = mysql_connect($db_config['host'] . ':' . $db_config['port'],
-                $db_config['user'],
-                $db_config['passwd']);
-        }
-        else
-        {
-            $this->conn = mysql_pconnect($db_config['host'] . ':' . $db_config['port'],
-                $db_config['user'],
-                $db_config['passwd']);
-        }
-        if (!$this->conn)
-        {
-            Swoole\Error::info(__CLASS__." SQL Error", mysql_error($this->conn));
-            return false;
-        }
-        mysql_select_db($db_config['name'], $this->conn) or Swoole\Error::info("SQL Error", mysql_error($this->conn));
-        if ($db_config['setname'])
-        {
-            mysql_query('set names ' . $db_config['charset'], $this->conn) or Swoole\Error::info("SQL Error",
-                mysql_error($this->conn));
-        }
-        return true;
-    }
-
-    function errorMessage($sql)
-    {
-        return mysql_error($this->conn) . "<hr />$sql<hr />MySQL Server: {$this->config['host']}:{$this->config['port']}";
     }
 
     /**
@@ -76,35 +36,94 @@ class MySQL implements \Swoole\IDatabase
     {
         $res = false;
 
-        for ($i = 0; $i < 2; $i++)
-        {
+        for ($i = 0; $i < 2; $i++) {
             $res = mysql_query($sql, $this->conn);
-            if ($res === false)
-            {
-                if (mysql_errno($this->conn) == 2006 or mysql_errno($this->conn) == 2013)
-                {
+            if ($res === false) {
+                if (mysql_errno($this->conn) == 2006 or mysql_errno($this->conn) == 2013) {
                     $r = $this->checkConnection();
-                    if ($r === true)
-                    {
+                    if ($r === true) {
                         continue;
                     }
                 }
-                \Swoole\Error::info(__CLASS__." SQL Error", $this->errorMessage($sql));
+                \Swoole\Error::info(__CLASS__ . " SQL Error", $this->errorMessage($sql));
                 return false;
             }
             break;
         }
 
-        if (!$res)
-        {
-            Swoole\Error::info(__CLASS__." SQL Error", $this->errorMessage($sql));
+        if (!$res) {
+            Swoole\Error::info(__CLASS__ . " SQL Error", $this->errorMessage($sql));
             return false;
         }
-        if (is_bool($res))
-        {
+        if (is_bool($res)) {
             return $res;
         }
         return new MySQLRecord($res);
+    }
+
+    /**
+     * 检查数据库连接,是否有效，无效则重新建立
+     */
+    protected function checkConnection()
+    {
+        if (!@$this->ping()) {
+            $this->close();
+            return $this->connect();
+        }
+        return true;
+    }
+
+    function ping()
+    {
+        if (!mysql_ping($this->conn)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * 关闭连接
+     *
+     * @see libs/system/IDatabase#close()
+     */
+    function close()
+    {
+        mysql_close($this->conn);
+    }
+
+    /**
+     * 连接数据库
+     *
+     * @see Swoole.IDatabase::connect()
+     */
+    function connect()
+    {
+        $db_config = $this->config;
+        if (empty($db_config['persistent'])) {
+            $this->conn = mysql_connect($db_config['host'] . ':' . $db_config['port'],
+                $db_config['user'],
+                $db_config['passwd']);
+        } else {
+            $this->conn = mysql_pconnect($db_config['host'] . ':' . $db_config['port'],
+                $db_config['user'],
+                $db_config['passwd']);
+        }
+        if (!$this->conn) {
+            Swoole\Error::info(__CLASS__ . " SQL Error", mysql_error($this->conn));
+            return false;
+        }
+        mysql_select_db($db_config['name'], $this->conn) or Swoole\Error::info("SQL Error", mysql_error($this->conn));
+        if ($db_config['setname']) {
+            mysql_query('set names ' . $db_config['charset'], $this->conn) or Swoole\Error::info("SQL Error",
+                mysql_error($this->conn));
+        }
+        return true;
+    }
+
+    function errorMessage($sql)
+    {
+        return mysql_error($this->conn) . "<hr />$sql<hr />MySQL Server: {$this->config['host']}:{$this->config['port']}";
     }
 
     /**
@@ -122,31 +141,6 @@ class MySQL implements \Swoole\IDatabase
     }
 
     /**
-     * 检查数据库连接,是否有效，无效则重新建立
-     */
-    protected function checkConnection()
-    {
-        if (!@$this->ping())
-        {
-            $this->close();
-            return $this->connect();
-        }
-        return true;
-    }
-
-    function ping()
-    {
-        if (!mysql_ping($this->conn))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-
-    /**
      * 获取上一次操作影响的行数
      *
      * @return int
@@ -154,16 +148,6 @@ class MySQL implements \Swoole\IDatabase
     function affected_rows()
     {
         return mysql_affected_rows($this->conn);
-    }
-
-    /**
-     * 关闭连接
-     *
-     * @see libs/system/IDatabase#close()
-     */
-    function close()
-    {
-        mysql_close($this->conn);
     }
 
     /**
@@ -202,8 +186,7 @@ class MySQLRecord implements \Swoole\IDbRecord
     function fetchall()
     {
         $data = array();
-        while ($record = mysql_fetch_assoc($this->result))
-        {
+        while ($record = mysql_fetch_assoc($this->result)) {
             $data[] = $record;
         }
         return $data;

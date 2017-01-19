@@ -108,7 +108,6 @@ class Model
 //			$params['order'] = "`{$this->table}`.{$this->primary} desc";
 //		}
 		$selectdb->put($params);
-
 		if (isset($params['page']))
 		{
 			$selectdb->paging();
@@ -216,14 +215,15 @@ class Model
         return true;
     }
 
-    /**
-     * 返回符合条件的记录数
-     * @param array $params
-     * @return true/false
-     */
-    public function count($params)
+	/**返回符合条件的记录数
+	 * @param $params
+	 * @param string $count_fields
+	 * @return int
+	 */
+    public function count($params,$count_fields='*')
     {
     	$selectdb = new SelectDB($this->db);
+		$selectdb->count_fields=$count_fields;
 		$selectdb->from($this->table);
 		$selectdb->put($params);
 		return $selectdb->count();
