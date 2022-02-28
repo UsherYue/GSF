@@ -1,9 +1,3 @@
-GSF unstable v0.1
-=================
-Build By usher.yue<br/> 
-基于Swoole框架的封装扩展和完善,Swoole由于其文档太少,难度对于PHP程序员来说过于大,很多php程序员敬而远之。<br/> 
-GSF框架就是为了让PHP程序员更简单的使用Swoole来开发自己的应用程序。<br/> 
-====
 # 入口文件代码
 	//屏蔽警告
 	error_reporting(E_ERROR);  
